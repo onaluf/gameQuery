@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/48/trunk/tests/benchmark/animation
+END
+staticTransformation.html
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/staticTransformation.html
+END
+randomMovementNoTransformation.html
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/randomMovementNoTransformation.html
+END
+benchmark.setup.js
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/benchmark.setup.js
+END
+staticAnimatedTransformation.html
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/staticAnimatedTransformation.html
+END
+randomMovementTransformation.html
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/randomMovementTransformation.html
+END
+randomMovementAnimatedTransformation.html
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/randomMovementAnimatedTransformation.html
+END
+sv.png
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/sv.png
+END
+staticNoTransformation.html
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/48/trunk/tests/benchmark/animation/staticNoTransformation.html
+END

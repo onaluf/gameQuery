@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+        <script src="../../../jquery.gamequery.js"></script>
+        <script src="benchmark.setup.js"></script>
+        <script>
+            $(function(){
+                $("#message").html("This is "+NUMBER_OF_RUNS+" frames for "+NUMBER_OF_ELEMENT+" sprites. The average time for each frame will be displayed at the end:");
+                
+                var animation = new $.gameQuery.Animation({imageURL: "sv.png", type: $.gameQuery.ANIMATION_VERTICAL, numberOfFrame: 4, delta: 32, rate: REFRESH_RATE});
+                
+                $("#playground").playground({height: 500, width: 500, refreshRate: REFRESH_RATE});
+                for(var i = NUMBER_OF_ELEMENT; i > 0; i--){
+                    $.playground().addSprite("simpleVertical_"+i,{animation: animation, posx: Math.random()*468, posy: Math.random()*468});
+                }
+                
+                var lastCall = (new Date()).getTime();
+                var count    = 0;
+                var sum      = 0;
+                
+                $.playground().registerCallback(function(){
+                        // Count time between call
+                        sum += (new Date()).getTime()-lastCall;
+                        if(count++ > NUMBER_OF_RUNS){
+                            $("#message").append("<span style='color: red'>"+Math.round(sum / count)+"ms</span>");
+                            $(".sprite").remove();
+                            return true;
+                        }
+                        lastCall=(new Date()).getTime();
+                    }, REFRESH_RATE);
+                $.playground().startGame();
+            });
+        </script>
+    </head>
+    <body>
+        <h2 id="message"></h2>
+        <div id="playground" style="width: 350px; height: 50px; background: yellow"></div>
+    </body>
+</html>
