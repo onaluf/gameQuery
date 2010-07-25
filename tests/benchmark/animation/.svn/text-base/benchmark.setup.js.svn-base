@@ -1,3 +1,0 @@
-var NUMBER_OF_ELEMENT = 200;
-var NUMBER_OF_RUNS    = 100;
-var REFRESH_RATE      = 1;
