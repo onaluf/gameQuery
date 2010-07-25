@@ -446,16 +446,10 @@
                 for(property in transformation){
                     switch(property){
                         case "left":
-                            gameQuery.posx = parseFloat(transformation.left);
-                            if(refreshBoundingCircle){
-                                gameQuery.boundingCircle.x = gameQuery.posx+gameQuery.width/2;
-                            }
+                            // For sprites use the posx() method instead
                             break;
                         case "top":
-                            gameQuery.posy = parseFloat(transformation.top);
-                            if(refreshBoundingCircle){
-                                gameQuery.boundingCircle.y = gameQuery.posy+gameQuery.height/2;
-                            }
+                            // For sprites use the posy() method instead
                             break;
                         case "width":
                             gameQuery.width = parseFloat(transformation.width);
@@ -644,6 +638,8 @@
                 height:			32,
                 posx:			0,
                 posy:			0,
+                posOffsetX: 	0,
+                posOffsetY: 	0,
                 idleCounter:	0,
                 currentFrame:	0,
                 geometry:       $.gameQuery.GEOMETRY_RECTANGLE,
@@ -1092,13 +1088,14 @@
                 // For ie from 5.5
                 var cos = Math.cos(angle_rad) * factor;
                 var sin = Math.sin(angle_rad) * factor;
-                var previousWidth = this.width();
-                var previousHeight = this.height();
                 this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+cos+",M12="+(-sin)+",M21="+sin+",M22="+cos+",SizingMethod='auto expand',FilterType='nearest neighbor')");
                 var newWidth = this.width();
                 var newHeight = this.height();
-                this.css("left", ""+(gameQuery.posx-(newWidth-previousWidth)/2)+"px");
-                this.css("top", ""+(gameQuery.posy-(newHeight-previousHeight)/2)+"px");
+                gameQuery.posOffsetX = (newWidth-gameQuery.width)/2;
+                gameQuery.posOffsetY = (newHeight-gameQuery.height)/2;
+
+                this.css("left", ""+(gameQuery.posx-gameQuery.posOffsetX)+"px");
+                this.css("top", ""+(gameQuery.posy-gameQuery.posOffsetY)+"px");
             }
             return this;
         },
@@ -1131,6 +1128,54 @@
             } else {
                 var fac = gameQuery.factor;
                 return fac ? fac : 1;
+            }
+        },
+
+        /**
+         * This function changes the x coordinate of the selected sprite
+         **/
+        posx: function(x){
+            var
+                gameQuery = this[0].gameQuery,
+                refreshBoundingCircle = $.gameQuery.playground && !$.gameQuery.playground.disableCollision
+            ;
+            
+            if(x !== undefined) {
+                gameQuery.posx = x;
+                if(refreshBoundingCircle){
+                    gameQuery.boundingCircle.x = x+gameQuery.width/2;
+                }
+
+                this.css("left", ""+(x-gameQuery.posOffsetX)+"px");
+                this.css("top", ""+(gameQuery.posy-gameQuery.posOffsetY)+"px");
+
+                return this;
+            } else {
+                return gameQuery.posx;
+            }
+        },
+
+        /**
+         * This function changes the y coordinate of the selected sprite
+         **/
+        posy: function(y){
+            var
+                gameQuery = this[0].gameQuery,
+                refreshBoundingCircle = $.gameQuery.playground && !$.gameQuery.playground.disableCollision
+            ;
+            
+            if(y !== undefined) {
+                gameQuery.posy = y;
+                if(refreshBoundingCircle){
+                    gameQuery.boundingCircle.y = y+gameQuery.height/2;
+                }
+
+                this.css("left", ""+(gameQuery.posx-gameQuery.posOffsetX)+"px");
+                this.css("top", ""+(y-gameQuery.posOffsetY)+"px");
+
+                return this;
+            } else {
+                return gameQuery.posy;
             }
         }
 	});
