@@ -1176,8 +1176,8 @@
          *  $(this).getPreviousz();
          *
          * Convenience functions:
-         *  $(this).position({[x: INTEGER|FUNCTION], [y: INTEGER|FUNCTION], [z: INTEGER|FUNCTION], [relative: BOOLEAN|FUNCTION]});
-         *  $(this).position(INTEGER|FUNCTION, [INTEGER|FUNCTION], [INTEGER|FUNCTION], [BOOLEAN|FUNCTION]);
+         *  $(this).pos({[x: INTEGER|FUNCTION], [y: INTEGER|FUNCTION], [z: INTEGER|FUNCTION], [relative: BOOLEAN|FUNCTION]});
+         *  $(this).pos(INTEGER|FUNCTION, [INTEGER|FUNCTION], [INTEGER|FUNCTION], [BOOLEAN|FUNCTION]);
          *  $(this).move({[x: INTEGER|FUNCTION], [y: INTEGER|FUNCTION], [z: INTEGER:FUNCTION], [relative: BOOLEAN|FUNCTION]});
          *  $(this).move(INTEGER|FUNCTION, [INTEGER:FUNCTION], [INTEGER:FUNCTION], [BOOLEAN|FUNCTION]);
          *
@@ -1352,10 +1352,10 @@
          *************************/
 
         // This will set the sprite's position to the parameters for x,y, and z.
-        // $('#sprite-12').position({y: 240}).show();
-        // $('#sprite-n').position({x: 5, y: 5, z: 0, relative: true});
-        // $('.boat').position(2, function() { return $(this).data('vspeed'); }, true);
-        position: function(options, y, z, relative) {
+        // $('#sprite-12').pos({y: 240}).show();
+        // $('#sprite-n').pos({x: 5, y: 5, z: 0, relative: true});
+        // $('.boat').pos(2, function() { return $(this).data('vspeed'); }, true);
+        pos: function(options, y, z, relative) {
           if (typeof options != 'object') {
             options = { x: options };
           }
@@ -1421,7 +1421,7 @@
             relative: true
           }
           var options = $.extend(defaults, options);
-          return $(this).position(options);
+          return $(this).pos(options);
         },
 
         /********************
