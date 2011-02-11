@@ -658,7 +658,9 @@
                 currentFrame:	0,
                 geometry:       $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:          0,
-                factor:         1
+                factor:         1,
+                factorh:        1,
+                factorv:        1
             }, options);
 
             var newSpriteElem = "<div id='"+sprite+"' class='sprite' style='position: absolute; display: block; overflow: hidden; height: "+options.height+"px; width: "+options.width+"px; left: "+options.posx+"px; top: "+options.posy+"px; background-position: "+((options.animation)? -options.animation.offsetx : 0)+"px "+((options.animation)? -options.animation.offsety : 0)+"px;' />";
@@ -1087,22 +1089,22 @@
 
             if(this.css("MozTransform")) {
                 // For firefox from 3.5
-                var transform = "rotate("+angle+"deg) scale("+factor+")";
+                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
                 this.css("MozTransform",transform);
             } else if(this.css("-o-transform")) {
                 // For opera from 10.50
-                var transform = "rotate("+angle+"deg) scale("+factor+")";
+                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
                 this.css("-o-transform",transform);
             } else if(this.css("WebkitTransform")!==null && this.css("WebkitTransform")!==undefined) {
                 // For safari from 3.1 (and chrome)
-                var transform = "rotate("+angle+"deg) scale("+factor+")";
+                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
                 this.css("WebkitTransform",transform);
             } else if(this.css("filter")!==undefined){
                 var angle_rad = Math.PI * 2 / 360 * angle;
                 // For ie from 5.5
                 var cos = Math.cos(angle_rad) * factor;
                 var sin = Math.sin(angle_rad) * factor;
-                this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+cos+",M12="+(-sin)+",M21="+sin+",M22="+cos+",SizingMethod='auto expand',FilterType='nearest neighbor')");
+                this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+(cos*gameQuery.factorh)+",M12="+(-sin*gameQuery.factorv)+",M21="+(sin*gameQuery.factorh)+",M22="+(cos*gameQuery.factorv)+",SizingMethod='auto expand',FilterType='nearest neighbor')");
                 var newWidth = this.width();
                 var newHeight = this.height();
                 gameQuery.posOffsetX = (newWidth-gameQuery.width)/2;
@@ -1143,6 +1145,21 @@
                 var fac = gameQuery.factor;
                 return fac ? fac : 1;
             }
+        },
+
+        /**
+         * This function flips the selected element(s) horizontal.
+         **/
+        fliph: function(){
+            this[0].gameQuery.factorh *= -1;
+
+			return this.transform(this.rotate(), this.scale());
+        },
+
+        flipv: function(){
+            this[0].gameQuery.factorv *= -1;
+
+			return this.transform(this.rotate(), this.scale());
         },
 
         /******************************************************
