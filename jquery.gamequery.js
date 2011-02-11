@@ -1150,14 +1150,29 @@
         /**
          * This function flips the selected element(s) horizontal.
          **/
-        fliph: function(){
-            this[0].gameQuery.factorh *= -1;
+        fliph: function(flip){
+			if (flip === undefined) {
+				this[0].gameQuery.factorh *= -1;
+			} else if (flip) {
+				this[0].gameQuery.factorh = -1;
+			} else {
+				this[0].gameQuery.factorh = 1;
+			}
 
 			return this.transform(this.rotate(), this.scale());
         },
 
-        flipv: function(){
-            this[0].gameQuery.factorv *= -1;
+        /**
+         * This function flips the selected element(s) vertical.
+         **/
+        flipv: function(flip){
+			if (flip === undefined) {
+				this[0].gameQuery.factorv *= -1;
+			} else if (flip) {
+				this[0].gameQuery.factorv = -1;
+			} else {
+				this[0].gameQuery.factorv = 1;
+			}
 
 			return this.transform(this.rotate(), this.scale());
         },
