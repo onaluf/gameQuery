@@ -1087,19 +1087,11 @@
             // Mark transformed and compute bounding box
             $.gameQuery.update(gameQuery,{angle: angle, factor: factor});
 
-            if(this.css("MozTransform")) {
-                // For firefox from 3.5
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("MozTransform",transform);
-            } else if(this.css("-o-transform")) {
-                // For opera from 10.50
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("-o-transform",transform);
-            } else if(this.css("WebkitTransform")!==null && this.css("WebkitTransform")!==undefined) {
-                // For safari from 3.1 (and chrome)
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("WebkitTransform",transform);
-            } else if(this.css("filter")!==undefined){
+            var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
+            this.css("MozTransform",transform);
+            this.css("-o-transform",transform);
+            this.css("WebkitTransform",transform);
+            if(this.css("filter")!==undefined){
                 var angle_rad = Math.PI * 2 / 360 * angle;
                 // For ie from 5.5
                 var cos = Math.cos(angle_rad) * factor;
