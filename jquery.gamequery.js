@@ -1095,14 +1095,14 @@
                 // For opera from 10.50
                 var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
                 this.css("-o-transform",transform);
+            } else if(this.css("msTransform")!==null && this.css("msTransform")!==undefined) {
+                // For ie from 9
+                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
+                this.css("msTransform",transform);
             } else if(this.css("WebkitTransform")!==null && this.css("WebkitTransform")!==undefined) {
                 // For safari from 3.1 (and chrome)
                 var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
                 this.css("WebkitTransform",transform);
-            } else if(this.css("msTransform")!==undefined){
-                // For ie from 9
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("msTransform",transform);
             } else if(this.css("filter")!==undefined){
                 var angle_rad = Math.PI * 2 / 360 * angle;
                 // For ie from 5.5
