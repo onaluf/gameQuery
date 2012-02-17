@@ -181,7 +181,8 @@
                     // does 'this' has an animation ?
                     if(gameQuery.animation){
                         //Do we have anything to do?
-                        if(gameQuery.idleCounter == gameQuery.animation.rate-1){
+                        if ( (gameQuery.idleCounter == gameQuery.animation.rate-1) && gameQuery.playing){
+
                             // does 'this' loops?
                             if(gameQuery.animation.type & $.gameQuery.ANIMATION_ONCE){
                                 if(gameQuery.currentFrame < gameQuery.animation.numberOfFrame-2){
@@ -548,7 +549,7 @@
          * Define the div to use for the display the game and initailize it.
          * This could be called on any node it doesn't matter.
          * The returned node is the playground node.
-         * This IS a desrtuctive call
+         * This IS a destructive call
          **/
         playground: function(options) {
             if(this.length == 1){
@@ -599,7 +600,7 @@
         /**
         * Starts the game. The resources from the resource manager are preloaded if necesary
         * Works only for the playgroung node.
-        * This is a non-desrtuctive call
+        * This is a non-destructive call
         **/
         startGame: function(callback) {
             //if the element is the playground we start the game:
@@ -611,7 +612,7 @@
         /**
         * Add a group to the sceen graph
         * works only on the sceengraph root or on another group
-        * This IS a desrtuctive call and should be terminated with end() to go back one level up in the chaining
+        * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
         **/
         addGroup: function(group, options) {
             options = $.extend({
@@ -644,7 +645,7 @@
         /**
         * Add a sprite to the current node.
         * Works only on the playground, the sceengraph root or a sceengraph group
-        * This is a non-desrtuctive call
+        * This is a non-destructive call
         **/
         addSprite: function(sprite, options) {
             options = $.extend({
@@ -659,6 +660,7 @@
                 geometry:       $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:          0,
                 factor:         1,
+				playing:        true,
                 factorh:        1,
                 factorv:        1
             }, options);
@@ -700,7 +702,7 @@
         /**
         * Remove the sprite  on which it is called. This is here for backward compatibility  but it doesn't
         * do anything more than simply calling .remove()
-        * This is a non-desrtuctive call.
+        * This is a non-destructive call.
         **/
         removeSprite: function() {
             this.remove();
@@ -840,10 +842,24 @@
             return this.pushStack(tileSet);
         },
 
+		/**
+		 * Stop the animation at the current frame
+		 */
+        pauseAnimation: function() {
+			this[0].gameQuery.playing = false;
+        },
+
+		/**
+		 * Start the animation (if paused)
+		 */
+		startAnimation: function() {
+            this[0].gameQuery.playing = true;
+        },
+
         /**
         * Changes the animation associated with a sprite.
-        * WARNING: no check are made to ensure that the object is really a sprite
-        * This is a non-desrtuctive call
+        * WARNING: no checks are made to ensure that the object is really a sprite
+        * This is a non-destructive call
         **/
         setAnimation: function(animation, callback) {
             var gameQuery = this[0].gameQuery;
@@ -885,8 +901,9 @@
         },
 
         /**
-        * This function add the sound to the resourceManger for later use and associate it to the selected dom element(s).
-        * This is a non-desrtuctive call
+        * This function adds the sound to the resourceManager for later use and
+		* associates it to the selected dom element(s).
+        * This is a non-destructive call
         **/
         addSound: function(sound, add) {
             // Does a SoundWrapper exists
@@ -913,7 +930,7 @@
 
         /**
         * This function plays the sound(s) associated with the selected dom element(s)
-        * This is a non-desrtuctive call
+        * This is a non-destructive call
         **/
         playSound: function() {
             $(this).each(function(){
@@ -929,8 +946,8 @@
         },
 
         /**
-        * This function stops the sound(s) associated with the selected dom element(s) and rewind them
-        * This is a non-desrtuctive call
+        * This function stops the sound(s) associated with the selected dom element(s) and rewinds them
+        * This is a non-destructive call
         **/
         stopSound: function() {
             $(this).each(function(){
@@ -946,7 +963,7 @@
 
         /**
         * This function pauses the sound(s) associated with the selected dom element(s)
-        * This is a non-desrtuctive call
+        * This is a non-destructive call
         **/
         pauseSound: function() {
             $(this).each(function(){
@@ -976,7 +993,7 @@
 
         /**
         * Register a callback to be trigered every "rate"
-        * This is a non-desrtuctive call
+        * This is a non-destructive call
         **/
         registerCallback: function(fn, rate) {
             $.gameQuery.resourceManager.registerCallback(fn, rate);
@@ -987,8 +1004,8 @@
         * @DEPRECATED: use loadCallback() instead
         * Set the id of the div to use as a loading bar while the games media are loaded during the preload.
         * If a callback function is given it will be called each time the loading progression changes with
-        * the precentage passed as unique argument.
-        * This is a non-desrtuctive call
+        * the percentage passed as unique argument.
+        * This is a non-destructive call
         **/
         setLoadBar: function(elementId, finalwidth, callback) {
             $.gameQuery.loadbar = {id: elementId, width: finalwidth, callback: callback};
@@ -1001,7 +1018,7 @@
          * - if 'this' is the playground, the function will return a list of all pair of collisioning elements. They are represented
          *    by a jQuery object containing a series of paire. Each paire represents two object colliding.(not yet implemented)
          * For now all abject are considered to be boxes.
-         * This IS a desrtuctive call and should be terminated with end() to go back one level up in the chaining
+         * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
          **/
         collision: function(filter){
             var resultList = [];
@@ -1135,7 +1152,7 @@
         },
 
         /**
-         * This function change the scale of the selected element(s). The passed argument is a ratio:
+         * This function changes the scale of the selected element(s). The passed argument is a ratio:
          * 1.0 = original size
          * 0.5 = half the original size
          * 2.0 = twice the original size
@@ -1152,7 +1169,7 @@
         },
 
         /**
-         * This function flips the selected element(s) horizontal.
+         * This function flips the selected element(s) horizontally.
          **/
         fliph: function(flip){
 			if (flip === undefined) {
@@ -1167,7 +1184,7 @@
         },
 
         /**
-         * This function flips the selected element(s) vertical.
+         * This function flips the selected element(s) vertically.
          **/
         flipv: function(flip){
 			if (flip === undefined) {
