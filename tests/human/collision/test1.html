@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+        <script src="../../../jquery.gamequery.js"></script>
+        <script>
+            $(function(){
+                
+                var red = new $.gameQuery.Animation({imageURL: "red.png", 
+                                                                type: $.gameQuery.ANIMATION_HORIZONTAL});
+                var blue = new $.gameQuery.Animation({imageURL: "blue.png", 
+                                                                type: $.gameQuery.ANIMATION_HORIZONTAL});
+                
+                $("#playground").playground({height: 640, width: 350});
+                
+                // no group, no translation, no transformation
+                $.playground()
+                    .addSprite("a1",{animation: red, width: 30, height: 30, posx: 0, posy: 0})
+                    .addSprite("b1",{animation: red, width: 30, height: 30, posx: 15, posy: 15});
+                    
+                // one group, no translation, no transformation
+                $.playground()
+                    .addSprite("a2",{animation: red, width: 30, height: 30, posx: 0, posy: 50})
+                    .addGroup("g1",{width:100, height: 100, posx: -55,posy: -5})
+                    	.addSprite("b2",{animation: red, width: 30, height: 30, posx: 70, posy: 70});
+                    
+                // no group, absolute translation, no rotation
+                $.playground()
+                    .addSprite("a3",{animation: red, width: 30, height: 30, posx: 0, posy: 100})
+                    .addSprite("b3",{animation: red, width: 30, height: 30, posx: 100, posy: 131});
+                $("#b3").x(15).y(115);
+                    
+                // no group, relative translation, scale
+                $.playground()
+                    .addSprite("a4",{animation: red, width: 30, height: 30, posx: 0, posy: 150})
+                    .addSprite("b4",{animation: red, width: 30, height: 30, posx: 100, posy: 181});
+               	$("#b4").x(-85, true).y(-16, true);
+                
+                // no group, no translation, flip
+                $.playground()
+                    .addSprite("a5",{animation: red, width: 30, height: 30, posx: 0, posy: 200})
+                    .addSprite("b5",{animation: red, width: 30, height: 30, posx: 15, posy: 215});
+                $("#a5").flipv();
+                $("#b5").fliph();
+                
+                // no group, no translation, rotation
+                $.playground()
+                    .addSprite("a6",{animation: red, width: 30, height: 30, posx: 0, posy: 250})
+                    .addSprite("b6",{animation: red, width: 30, height: 30, posx: 30, posy: 265});
+                $("#b6").rotate(45);
+                    
+                // no group, no translation, scale
+                $.playground()
+                    .addSprite("a7",{animation: red, width: 30, height: 30, posx: 0, posy: 300})
+                    .addSprite("b7",{animation: red, width: 30, height: 30, posx: 30, posy: 315});
+                $("#b7").scale(1.5);
+                
+                
+                // now we try to turn every b* sprites blue
+                $("#a1").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $("#a2").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $("#a3").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $("#a4").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $("#a5").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $("#a6").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $("#a7").collision().each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
+                $.playground().startGame();
+            });
+        </script>
+    </head>
+    <body>
+        <h2>Each line shoud contains a blue square in front of a red one:</h2>
+        <div id="playground" style="width: 350px; height: 50px; background: white"></div>
+    </body>
+</html>

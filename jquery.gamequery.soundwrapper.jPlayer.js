@@ -20,17 +20,12 @@
             
             // start loading the sound. Should turn this.ready to true once done.
             this.load  = function(){
-            	try{
-	                this.sound = soundManager.createSound({
-	                    id: this.id,
-	                    url: url,
-	                    autoplay: false, 
-	                    autoLoad: true 
-	                });
-              } catch (err) {
-              	// if something failed we generate a fake sound object
-              		this.sound = {readyState: 3, play: function(){}};
-              }
+                this.sound = soundManager.createSound({
+                    id: this.id,
+                    url: url,
+                    autoplay: false, 
+                    autoLoad: true 
+                });
             };
             
             // plays the sound if this.ready == true

@@ -1,0 +1,31 @@
+{
+    "name": "gameQuery",
+    "version": "0.6_pre",
+    "title": "gameQuery - javascript game development made easy",
+    "author": {
+        "name": "Selim Arsever",
+        "url": "https://selim.arsever.ch"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "MIT-LICENSE.txt"
+        }
+    ],
+    "dependencies": {
+        "jquery": "1"
+    },
+    "description": "gameQuery is a jQuery plug-in to help make javascript game development easier by adding some simple game-related classes",
+    "keywords": [
+        "game",
+        "sprite",
+        "animation",
+        "collision"
+    ],
+    "homepage": "http://gamequery.onaluf.org",
+    "docs": "http://gamequery.onaluf.org/documentation.php",
+    "demo": "http://gamequery.onaluf.org/demos.php",
+    "files": [
+        "jquery.gamequery.js"
+    ]
+}

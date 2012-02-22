@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+	<head>
+		<title>gameQuery - Collision Demo</title>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+        <script type="text/javascript" src="soundmanager2.js"></script>
+		<script type="text/javascript" src="../../jquery.gamequery.js"></script>
+        <script type="text/javascript" src="../../jquery.gamequery.soundwrapper.soundmanager2.js"></script>
+		<script type="text/javascript" src="collisionDemo.js"></script>
+		<style type="text/css">
+			html,body{
+				margin: 0;
+				padding: 0;
+				background-color: black;
+                font-family: verdana, sans-serif;
+                font-size: 8pt;
+			}
+            .muteButton{
+                background: url('sound_mute.png');
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+            .unmuteButton{
+                background: url('sound.png');
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+		</style>
+	</head>
+	<body>
+	<div id="playground" style="width: 600px; height: 300px; background: black;">
+		<div id="welcomMessage"style="position: absolute; top: 120px; width: 600px; color: white;">
+            <div id="loadingBarB" style="position: relative; left: 100px; height: 15px; width: 400px; background: none; border: thin solid #660000">
+                <div id="loadingBar" style="position: relative; left: 0px; height: 15px; width: 0px; background: url('load.png');"></div>
+            </div><br />
+			<center><a style="cursor: pointer;" id="startbutton">Click here to start!</a></center>
+		</div>
+	</div>
+	</body>
+</html>

@@ -369,7 +369,7 @@
                 // Update the descriptor
                 for(property in transformation){
                     switch(property){
-                        case "left":
+                        case "x":
                             //Do we need to activate/desactive the first/last column
                             var left = parseFloat(transformation.left);
                             //Get the tileSet offset (relatif to the playground)
@@ -406,7 +406,7 @@
                             gameQuery.firstColumn = firstColumn;
                             gameQuery.lastColumn = lastColumn;
                             break;
-                        case "top":
+                        case "y":
                             //Do we need to activate/desactive the first/last row
                             var top = parseFloat(transformation.top);
                             //Get the tileSet offset (relatif to the playground)
@@ -460,11 +460,15 @@
                 // Update the descriptor
                 for(property in transformation){
                     switch(property){
-                        case "left":
-                            // For sprites use the posx() method instead
+                        case "x":
+                            if(refreshBoundingCircle){
+                                gameQuery.boundingCircle.x = gameQuery.posx+gameQuery.width/2;
+                            }
                             break;
-                        case "top":
-                            // For sprites use the posy() method instead
+                        case "y":
+                            if(refreshBoundingCircle){
+                                gameQuery.boundingCircle.y = gameQuery.posy+gameQuery.height/2;
+                            }
                             break;
                         case "width":
                             gameQuery.width = parseFloat(transformation.width);
@@ -620,10 +624,13 @@
                 height:		32,
                 posx:		0,
                 posy:		0,
+                posz:		0,
+                posOffsetX: 0,
+                posOffsetY: 0,
                 overflow: 	"visible",
                 geometry:   $.gameQuery.GEOMETRY_RECTANGLE,
-                angle:          0,
-                factor:         1
+                angle:      0,
+                factor:     1
             }, options);
 
             var newGroupElement = "<div id='"+group+"' class='group' style='position: absolute; display: block; overflow: "+options.overflow+"; top: "+options.posy+"px; left: "+options.posx+"px; height: "+options.height+"px; width: "+options.width+"px;' />";
@@ -653,6 +660,7 @@
                 height:			32,
                 posx:			0,
                 posy:			0,
+                posz:			0,
                 posOffsetX: 	0,
                 posOffsetY: 	0,
                 idleCounter:	0,
@@ -720,7 +728,10 @@
                 sizex:          32,
                 sizey:          32,
                 posx:			0,
-                posy:			0
+                posy:			0,
+                posz:			0,
+                posOffsetX: 	0,
+                posOffsetY: 	0
             }, options);
 
             //var newSpriteElem = "<div id='"+sprite+"' style='position: absolute; display: block; overflow: hidden; height: "+options.height+"px; width: "+options.width+"px; left: "+options.posx+"px; top: "+options.posy+"px; background-position: 0px 0px;' />";
@@ -900,6 +911,102 @@
             return this;
         },
 
+                /**
+        * Register a callback to be trigered every "rate"
+        * This is a non-destructive call
+        **/
+        registerCallback: function(fn, rate) {
+            $.gameQuery.resourceManager.registerCallback(fn, rate);
+            return this;
+        },
+
+        /**
+         * This function retreive a list of object in collision with the subject:
+         * - if 'this' is a sprite or a group, the function will retrieve the list of sprites (not groups) that touch it
+         * - if 'this' is the playground, the function will return a list of all pair of collisioning elements. They are represented
+         *    by a jQuery object containing a series of paire. Each paire represents two object colliding.(not yet implemented)
+         * For now all abject are considered to be boxes.
+         * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
+         **/
+        collision: function(filter){
+            var resultList = [];
+
+            //retrieve 'this' offset by looking at the parents
+            var itsParent = this[0].parentNode, offsetX = 0, offsetY = 0;
+            while (itsParent != $.gameQuery.playground[0]){
+                    if(itsParent.gameQuery){
+                    offsetX += itsParent.gameQuery.posx;
+                    offsetY += itsParent.gameQuery.posy;
+                }
+                itsParent = itsParent.parentNode;
+            }
+
+            // retrieve the gameQuery object
+            var gameQuery = this[0].gameQuery;
+
+
+            // retrieve the playground's absolute position and size information
+            var pgdGeom = {top: 0, left: 0, bottom: $.playground().height(), right: $.playground().width()};
+
+            // Does 'this' is inside the playground ?
+            if( (gameQuery.boundingCircle.y + gameQuery.boundingCircle.radius + offsetY < pgdGeom.top)    ||
+                (gameQuery.boundingCircle.x + gameQuery.boundingCircle.radius + offsetX < pgdGeom.left)   ||
+                (gameQuery.boundingCircle.y - gameQuery.boundingCircle.radius + offsetY > pgdGeom.bottom) ||
+                (gameQuery.boundingCircle.x - gameQuery.boundingCircle.radius + offsetX > pgdGeom.right)){
+                return this.pushStack(new $([]));
+            }
+
+            if(this == $.gameQuery.playground){
+                //TODO Code the "all against all" collision detection and find a nice way to return a list of pairs of elements
+            } else {
+                // we must find all the element that touches 'this'
+                var elementsToCheck = new Array();
+                elementsToCheck.push($.gameQuery.sceengraph.children(filter).get());
+                elementsToCheck[0].offsetX = 0;
+                elementsToCheck[0].offsetY = 0;
+
+                for(var i = 0, len = elementsToCheck.length; i < len; i++) {
+                    var subLen = elementsToCheck[i].length;
+                    while(subLen--){
+                        var elementToCheck = elementsToCheck[i][subLen];
+                        // is it a gameQuery generated element?
+                        if(elementToCheck.gameQuery){
+                            // we don't want to check groups
+                            if(!elementToCheck.gameQuery.group && !elementToCheck.gameQuery.tileSet){
+                                // does it touches the selection?
+                                if(this[0]!=elementToCheck){
+                                    // check bounding circle collision
+                                    // 1) distance between center:
+                                    var distance = Math.sqrt(Math.pow(offsetY + gameQuery.boundingCircle.y - elementsToCheck[i].offsetY - elementToCheck.gameQuery.boundingCircle.y, 2) + Math.pow(offsetX + gameQuery.boundingCircle.x - elementsToCheck[i].offsetX - elementToCheck.gameQuery.boundingCircle.x, 2));
+                                    if(distance - gameQuery.boundingCircle.radius - elementToCheck.gameQuery.boundingCircle.radius <= 0){
+                                        // check real collision
+                                        if($.gameQuery.collide(gameQuery, {x: offsetX, y: offsetY}, elementToCheck.gameQuery, {x: elementsToCheck[i].offsetX, y: elementsToCheck[i].offsetY})) {
+                                            // add to the result list if collision detected
+                                            resultList.push(elementsToCheck[i][subLen]);
+                                        }
+                                    }
+                                }
+                            }
+                            // Add the children nodes to the list
+                            var eleChildren = $(elementToCheck).children(filter);
+                            if(eleChildren.length){
+                                elementsToCheck.push(eleChildren.get());
+                                elementsToCheck[len].offsetX = elementToCheck.gameQuery.posx + elementsToCheck[i].offsetX;
+                                elementsToCheck[len].offsetY = elementToCheck.gameQuery.posy + elementsToCheck[i].offsetY;
+                                len++;
+                            }
+                        }
+                    }
+                }
+                return this.pushStack($(resultList));
+            }
+        },
+        
+/** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
+/** --          Sound related functions           ------------------------------------------------------------------------------------------------------------------ **/
+/** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
+
+        
         /**
         * This function adds the sound to the resourceManager for later use and
 		* associates it to the selected dom element(s).
@@ -991,108 +1098,10 @@
             });
         },
 
-        /**
-        * Register a callback to be trigered every "rate"
-        * This is a non-destructive call
-        **/
-        registerCallback: function(fn, rate) {
-            $.gameQuery.resourceManager.registerCallback(fn, rate);
-            return this;
-        },
 
-        /**
-        * @DEPRECATED: use loadCallback() instead
-        * Set the id of the div to use as a loading bar while the games media are loaded during the preload.
-        * If a callback function is given it will be called each time the loading progression changes with
-        * the percentage passed as unique argument.
-        * This is a non-destructive call
-        **/
-        setLoadBar: function(elementId, finalwidth, callback) {
-            $.gameQuery.loadbar = {id: elementId, width: finalwidth, callback: callback};
-            return this;
-        },
-
-        /**
-         * This function retreive a list of object in collision with the subject:
-         * - if 'this' is a sprite or a group, the function will retrieve the list of sprites (not groups) that touch it
-         * - if 'this' is the playground, the function will return a list of all pair of collisioning elements. They are represented
-         *    by a jQuery object containing a series of paire. Each paire represents two object colliding.(not yet implemented)
-         * For now all abject are considered to be boxes.
-         * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
-         **/
-        collision: function(filter){
-            var resultList = [];
-
-            //retrieve 'this' offset by looking at the parents
-            var itsParent = this[0].parentNode, offsetX = 0, offsetY = 0;
-            while (itsParent != $.gameQuery.playground[0]){
-                    if(itsParent.gameQuery){
-                    offsetX += itsParent.gameQuery.posx;
-                    offsetY += itsParent.gameQuery.posy;
-                }
-                itsParent = itsParent.parentNode;
-            }
-
-            // retrieve the gameQuery object
-            var gameQuery = this[0].gameQuery;
-
-
-            // retrieve the playground's absolute position and size information
-            var pgdGeom = {top: 0, left: 0, bottom: $.playground().height(), right: $.playground().width()};
-
-            // Does 'this' is inside the playground ?
-            if( (gameQuery.boundingCircle.y + gameQuery.boundingCircle.radius + offsetY < pgdGeom.top)    ||
-                (gameQuery.boundingCircle.x + gameQuery.boundingCircle.radius + offsetX < pgdGeom.left)   ||
-                (gameQuery.boundingCircle.y - gameQuery.boundingCircle.radius + offsetY > pgdGeom.bottom) ||
-                (gameQuery.boundingCircle.x - gameQuery.boundingCircle.radius + offsetX > pgdGeom.right)){
-                return this.pushStack(new $([]));
-            }
-
-            if(this == $.gameQuery.playground){
-                //TODO Code the "all against all" collision detection and find a nice way to return a list of pairs of elements
-            } else {
-                // we must find all the element that touches 'this'
-                var elementsToCheck = new Array();
-                elementsToCheck.push($.gameQuery.sceengraph.children(filter).get());
-                elementsToCheck[0].offsetX = 0;
-                elementsToCheck[0].offsetY = 0;
-
-                for(var i = 0, len = elementsToCheck.length; i < len; i++) {
-                    var subLen = elementsToCheck[i].length;
-                    while(subLen--){
-                        var elementToCheck = elementsToCheck[i][subLen];
-                        // is it a gameQuery generated element?
-                        if(elementToCheck.gameQuery){
-                            // we don't want to check groups
-                            if(!elementToCheck.gameQuery.group && !elementToCheck.gameQuery.tileSet){
-                                // does it touches the selection?
-                                if(this[0]!=elementToCheck){
-                                    // check bounding circle collision
-                                    // 1) distance between center:
-                                    var distance = Math.sqrt(Math.pow(offsetY + gameQuery.boundingCircle.y - elementsToCheck[i].offsetY - elementToCheck.gameQuery.boundingCircle.y, 2) + Math.pow(offsetX + gameQuery.boundingCircle.x - elementsToCheck[i].offsetX - elementToCheck.gameQuery.boundingCircle.x, 2));
-                                    if(distance - gameQuery.boundingCircle.radius - elementToCheck.gameQuery.boundingCircle.radius <= 0){
-                                        // check real collision
-                                        if($.gameQuery.collide(gameQuery, {x: offsetX, y: offsetY}, elementToCheck.gameQuery, {x: elementsToCheck[i].offsetX, y: elementsToCheck[i].offsetY})) {
-                                            // add to the result list if collision detected
-                                            resultList.push(elementsToCheck[i][subLen]);
-                                        }
-                                    }
-                                }
-                            }
-                            // Add the children nodes to the list
-                            var eleChildren = $(elementToCheck).children(filter);
-                            if(eleChildren.length){
-                                elementsToCheck.push(eleChildren.get());
-                                elementsToCheck[len].offsetX = elementToCheck.gameQuery.posx + elementsToCheck[i].offsetX;
-                                elementsToCheck[len].offsetY = elementToCheck.gameQuery.posy + elementsToCheck[i].offsetY;
-                                len++;
-                            }
-                        }
-                    }
-                }
-                return this.pushStack($(resultList));
-            }
-        },
+/** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
+/** --          Transformation functions           ----------------------------------------------------------------------------------------------------------------- **/
+/** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
 
         /**
          * This is an internal function doing the combine action of rotate and scale
@@ -1172,12 +1181,14 @@
          * This function flips the selected element(s) horizontally.
          **/
         fliph: function(flip){
+        	var gameQuery = this[0].gameQuery;
+        	
 			if (flip === undefined) {
-				this[0].gameQuery.factorh *= -1;
+				gameQuery.factorh *= -1;
 			} else if (flip) {
-				this[0].gameQuery.factorh = -1;
+				gameQuery.factorh = -1;
 			} else {
-				this[0].gameQuery.factorh = 1;
+				gameQuery.factorh = 1;
 			}
 
 			return this.transform(this.rotate(), this.scale());
@@ -1187,510 +1198,118 @@
          * This function flips the selected element(s) vertically.
          **/
         flipv: function(flip){
+        	var gameQuery = this[0].gameQuery;
+        	
 			if (flip === undefined) {
-				this[0].gameQuery.factorv *= -1;
+				gameQuery.factorv *= -1;
 			} else if (flip) {
-				this[0].gameQuery.factorv = -1;
+				gameQuery.factorv = -1;
 			} else {
-				this[0].gameQuery.factorv = 1;
+				gameQuery.factorv = 1;
 			}
 
 			return this.transform(this.rotate(), this.scale());
         },
 
-        /******************************************************
-         *
-         * SPRITE MOVEMENT & PLACEMENT FUNCTIONS
-         *
-         *  .x() and .y() are overloaded functions, accepting a wide range of values.
-         *  For performance reasons, you may choose to use .getx(), .sety(), etc.
-         *  However, I have not yet run benchmark tests, and it probably won't matter
-         *  for less than a hundred objects on screen, from anectdotal testing.
-         *
-         *  $(this).x();
-         *  $(this).y();
-         *  $(this).z();
-         *  $(this).x({x: INTEGER|FUNCTION, [relative: BOOLEAN|FUNCTION]});
-         *  $(this).y({y: INTEGER|FUNCTION, [relative: BOOLEAN|FUNCTION]});
-         *  $(this).z({y: INTEGER|FUNCTION, [relative: BOOLEAN|FUNCTION]});
-         *  $(this).x(INTEGER|FUNCTION, [BOOLEAN|FUNCTION]);
-         *  $(this).y(INTEGER|FUNCTION, [BOOLEAN|FUNCTION]);
-         *  $(this).z(INTEGER|FUNCTION, [BOOLEAN|FUNCTION]);
-         *
-         * Low level functions (possibly preferred for performance):
-         *  $(this).getx([BOOLEAN]);
-         *  $(this).gety([BOOLEAN]);
-         *  $(this).getz([BOOLEAN]);
-         *  $(this).setx(INTEGER);
-         *  $(this).sety(INTEGER);
-         *  $(this).setz(INTEGER);
-         *  $(this).getPreviousx();
-         *  $(this).getPreviousy();
-         *  $(this).getPreviousz();
-         *
-         * Convenience functions:
-         *  $(this).pos({[x: INTEGER|FUNCTION], [y: INTEGER|FUNCTION], [z: INTEGER|FUNCTION], [relative: BOOLEAN|FUNCTION]});
-         *  $(this).pos(INTEGER|FUNCTION, [INTEGER|FUNCTION], [INTEGER|FUNCTION], [BOOLEAN|FUNCTION]);
-         *  $(this).move({[x: INTEGER|FUNCTION], [y: INTEGER|FUNCTION], [z: INTEGER:FUNCTION], [relative: BOOLEAN|FUNCTION]});
-         *  $(this).move(INTEGER|FUNCTION, [INTEGER:FUNCTION], [INTEGER:FUNCTION], [BOOLEAN|FUNCTION]);
-         *
-         * Helper functions:
-         *  $(this).getposxyz('x'|'y'|'z', [BOOLEAN]);
-         *  $(this).setposxyz('x'|'y'|'z', INTEGER);
-         *  $(this).posxyz(); -- Overloaded as per x(), y(), and z().
-         *
-         ******************************************************/
+/** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
+/** --          Position getter/setter functions           --------------------------------------------------------------------------------------------------------- **/
+/** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
 
         /**
-         * This will return the sprite's horizontal position.
-         * It may also be used to set that position.
-         *
-         * If relative: true, then we add x to the position.
-         * If called without a new value, then it returns the current x position.
-         * Otherwise it returns the object itself.
-         *
-         * @param mixed options
-         *  (Optional) If not provided, then we simply return the current position.
-         *  Otherwise, it is used to specify the value to set, according to the type:
-         *    Object: The x value will be used, along with the relative property of
-         *      the parameter.
-         *    Function: The return value of the function will be used.
-         *    Other: The value will be used directly.
-         * @param boolean relative
-         *  (Optional) If provided, this will override the relative value of options.
-         *  In either case, this determines whether to add the value to the current
-         *  position if false, or to set the position to the value (default).
-         * @return integer
-         *  The horizontal position of the object.
-         *
-         *  Examples:
-         *  _x = $('#sprite-65').x();
-         *  $('#sprite-33').x({x: 5, relative: true});
-         *  $('#sprite-99').x('120');
-         *  _x = $('.monster').each().x(function() { return $(this).data('hspeed') / 2; });
+         * TODO
          */
-        x: function(options, relative) {
-          return $(this).posxyz('x', options, relative);
+        xyz: function(x, y, z, relative) {
+             if (x === undefined) {
+             	return this.getxyz({x: true, y: true, z: true});
+	         } else {
+	         	return this.setxyz({x: x, y: y, z: z}, relative);
+	         }
         },
-
+        
         /**
-         * This will return the sprite's vertical position.
-         * It may also be used to set that position.
-         *
-         * If relative: true, then we add y to the position.
-         * If called without a new value, then it returns the current x position.
-         * Otherwise it returns the object itself.
-         *
-         * @param mixed options
-         *  (Optional) If not provided, then we simply return the current position.
-         *  Otherwise, it is used to specify the value to set, according to the type:
-         *    Object: The x value will be used, along with the relative property of
-         *      the parameter.
-         *    Function: The return value of the function will be used.
-         *    Other: The value will be used directly.
-         * @param boolean relative
-         *  (Optional) If provided, this will override the relative value of options.
-         *  In either case, this determines whether to add the value to the current
-         *  position if false, or to set the position to the value (default).
-         * @return integer
-         *  The horizontal position of the object.
-         *
-         *  _y = $('#sprite-65').y();
-         *  $('#sprite-33').y({y: 45});
-         *  _y = $('#sprite-99').y('120');
-         *  $('.robot').each().y({y: function() { return $(this).data('vspeed') / 2; }, relative: true});
-         *  $('.bouncy').each().y(-10, true);
+         * Those function are all all shortcut for the .xyz(...) function. Please look 
+         * at this function for a detailed documentation. 
          */
-        y: function(options, relative) {
-          return $(this).posxyz('y', options, relative);
+        x: function(value, relative) {
+             if (value === undefined) {
+             	return this.getxyz().x;
+	         } else {
+	         	return this.setxyz({x: value}, relative);
+	         }
         },
 
-        z: function(options, relative) {
-          return $(this).posxyz('z', options, relative);
+        y: function(value, relative) {
+             if (value === undefined) {
+             	return this.getxyz().y;
+	         } else {
+	         	return this.setxyz({y: value}, relative);
+	         }
         },
 
+        z: function(value, relative) {
+             if (value === undefined) {
+             	return this.getxyz().z;
+	         } else {
+	         	return this.setxyz({z: value}, relative);
+	         }
+        },
+        
+        xy: function(x, y, relative) {
+             if (x === undefined) {
+             	// we return the z too since it doesn't cost anything
+             	return this.getxyz();
+	         } else {
+	         	return this.setxyz({x: x, y: y}, relative);
+	         }
+        },
+        
+        
         /**
-         * Low level function to get the item's horizontal position.
-         *
-         * @param boolean _reset
-         *  (Optional) If true, then take the value directly from the object's DOM.
-         *  Otherwise, the value is cached for performance.
-         * @return integer
-         *  The horizontal position of the object.
+         * Those two functions are 'private', not supposed to be used outside 
+         * of the library. They are NOT part of the API and so are not guaranteed
+         * to remain unchanged. You should really use .xyz() instead.
+         * 
+         * They contain the impementation of the xyz() family of function.
          */
-        getx: function(_reset) {
-          return $(this).getposxyz('x', _reset);
+        getxyz: function() {
+        	var gameQuery = this[0].gameQuery;
+        	return {x: gameQuery.posx, y: gameQuery.posy, z: gameQuery.posz}
         },
-
-        /**
-         * Low level function to get the item's vertical position.
-         *
-         * @param boolean _reset
-         *  (Optional) If true, then take the value directly from the object's DOM.
-         *  Otherwise, the value is cached for performance.
-         * @return integer
-         *  The vertical position of the object.
-         */
-        gety: function(_reset) {
-          return $(this).getposxyz('y', _reset);
-        },
-
-        getz: function(_reset) {
-          return $(this).getposxyz('z', _reset);
-        },
-
-        /**
-         * Low level function to set the item's horizontal position.
-         *
-         * @param integer pos
-         *  The value to set the object's 'left' css value.
-         * @return integer
-         *  The horizontal position of the object.
-         */
-        setx: function(pos) {
-          return $(this).setposxyz('x', pos);
-        },
-
-        /**
-         * Low level function to set the item's vertical position.
-         *
-         * @param integer pos
-         *  The value to set the object's 'top' css value.
-         * @return integer
-         *  The vertical position of the object.
-         */
-        sety: function(pos) {
-          return $(this).setposxyz('y', pos);
-        },
-
-        setz: function(pos) {
-          return $(this).setposxyz('z', pos);
-        },
-
-        /**
-         * Return the most recent horizontal position before its last change.
-         */
-        getPreviousx: function() {
-          var prev = $(this).data(GAMEQUERY_NAMESPACE + 'prevx');
-          if (prev === null || prev === undefined) {
-            prev = $(this).getx();
-            $(this).data(GAMEQUERY_NAMESPACE + 'prevx', prev);
-          }
-          return prev;
-        },
-
-        /**
-         * Return the most recent vertical position before its last change.
-         */
-        getPreviousy: function() {
-          var prev = $(this).data(GAMEQUERY_NAMESPACE + 'prevy');
-          if (prev === null || prev === undefined) {
-            prev = $(this).gety();
-            $(this).data(GAMEQUERY_NAMESPACE + 'prevy', prev);
-          }
-          return prev;
-        },
-
-        getPreviousz: function() {
-          var prev = $(this).data(GAMEQUERY_NAMESPACE + 'prevz');
-          if (prev === null || prev === undefined) {
-            prev = $(this).getz();
-            $(this).data(GAMEQUERY_NAMESPACE + 'prevz', prev);
-          }
-          return prev;
-        },
-
-        /*************************
-         * Convenience functions.
-         *************************/
-
-        // This will set the sprite's position to the parameters for x,y, and z.
-        // $('#sprite-12').pos({y: 240}).show();
-        // $('#sprite-n').pos({x: 5, y: 5, z: 0, relative: true});
-        // $('.boat').pos(2, function() { return $(this).data('vspeed'); }, true);
-        pos: function(options, y, z, relative) {
-          if (typeof options != 'object') {
-            options = { x: options };
-          }
-
-          // Add the optional parameters.
-          if (y !== null && y !== undefined) {
-            // Add the value to our options.
-            options.y = y;
-          }
-          if (z !== null && z !== undefined) {
-            // Add the value to our options.
-            options.z = z;
-          }
-          if (relative !== null && relative !== undefined) {
-            // Add the value to our options.
-            options.relative = relative;
-          }
-
-          // Merge in our defaults.
-          var defaults = {
-            relative: false
-          }
-          var options = $.extend(defaults, options);
-
-          if (options.x || (!options.relative && !(options.x === null || options.x === undefined))) {
-            $(this).x(options);
-          }
-          if (options.y || (!options.relative && !(options.y === null || options.y === undefined))) {
-            $(this).y(options);
-          }
-          if (options.z || (!options.relative && !(options.z === null || options.z === undefined))) {
-            $(this).z(options);
-          }
-          return $(this);
-        },
-
-        // This will move an object relative to its current position.
-        //   $('.missile').each().move({x: -3, z: 3});
-        //   $(this).move({x: 2, y: -1}).addClass('moving');
-        //   $('#my-sprite').move(3, 0, -1, true);
-        //   $('.goblin').each.move(function() { return $(this).data('hspeed')*1.5; }, $(this).data('vspeed'));
-        move: function(options, y, z, relative) {
-          if (typeof options != 'object') {
-            options = { x: options };
-          }
-
-          // Add the optional parameters.
-          if (y !== null && y !== undefined) {
-            // Add the value to our options.
-            options.y = y;
-          }
-          if (z !== null && z !== undefined) {
-            // Add the value to our options.
-            options.z = z;
-          }
-          if (relative !== null && relative !== undefined) {
-            // Add the value to our options.
-            options.relative = relative;
-          }
-
-          // Merge in our defaults.
-          var defaults = {
-            relative: true
-          }
-          var options = $.extend(defaults, options);
-          return $(this).pos(options);
-        },
-
-        /********************
-         * Helper functions.
-         ********************/
-
-        getposxyz: function(_which, _reset) {
-          // Get the stored value.
-          var pos = $(this).data(GAMEQUERY_NAMESPACE + _which);
-          if (pos === null || pos === undefined || _reset) {
-            // If there is currently no stored value, or we've been told to reset it,
-            // then set the actual position from the element's DOM.
-            pos = parseInt($(this).css(GAMEQUERY_XY_ATTRIBUTES[_which]));
-
-            // parseInt sometimes returns NaN, so adjust for that.
-            pos = pos ? pos : 0;
-
-            $(this).data(GAMEQUERY_NAMESPACE + _which, pos);
-          }
-          return pos;
-        },
-
-        setposxyz: function(_which, pos) {
-          var
-              _currentPos = $(this).getposxyz(_which),
-              gameQuery = this[0].gameQuery,
-              refreshBoundingCircle = $.gameQuery.playground && !$.gameQuery.playground.disableCollision
-            ;
-          if ((pos !== undefined) && (pos != _currentPos)) {
-            gameQuery['pos' + _which] = pos;
-            if (refreshBoundingCircle && (_which != 'z')) {
-              gameQuery.boundingCircle[_which] = pos + gameQuery[GAMEQUERY_XY_DIMENSION[_which]]/2;
-            }
-            $(this).data(GAMEQUERY_NAMESPACE + 'prev' + _which, _currentPos);
-            $(this).data(GAMEQUERY_NAMESPACE + _which, pos);
-            if (_which == 'z') {
-              $(this).css('z-index', pos);
-            }
-            else {
-              $(this).css(GAMEQUERY_XY_ATTRIBUTES[_which], '' + (pos - gameQuery['posOffset' + _which.toUpperCase()]) + 'px');
-            }
-          }
-
-          return pos;
-        },
-
-        /**
-         * This will set or return the sprite's horizontal or vertical position.
-         *
-         * Note that this is a helper function for .x(), .y(), and z(), which
-         * are generally easier to call than this directly.
-         *
-         * @param string _which
-         *  This must be 'x', 'y', or 'z', corresponding to the appropriate
-         *  property to modify or retrieve.
-         * @param mixed options
-         *  (Optional) If not provided, then we simply return the current position.
-         *  Otherwise, it is used to specify the value to set, according to the type:
-         *    Object: The x, y, or z value as appropriate will be used, along with the
-         *      relative property of the object.
-         *    Function: The return value of the function will be used.
-         *    Other: The value will be used directly.
-         * @param boolean relative
-         *  (Optional) If provided, this will override the relative value of options.
-         *  In either case, this determines whether to add the value to the current
-         *  position if false, or to set the position to the value (default).
-         *
-         *  Examples:
-         *    _y = $('#sprite-65').posxy('y');
-         *    $('#sprite-33').posxy('x', {x: 45});
-         *    _x = $('#sprite-99').posxy('x', '120');
-         *    $('.robot').each().posxy('x', {x: $(this).data('hspeed'), relative: true});
-         *    $('.bouncy').each()
-         *      .posxy('y', function() { return $(this).data('vspeed')/2; }, true);
-         */
-        posxyz: function(_which, options, relative) {
-          var currentPos = $(this).getposxyz(_which);
-          if (options === null || options === undefined) {
-            // We simply need to return the original value.
-            return currentPos;
-          }
-
-          if (typeof options != 'object') {
-            // Convert the passed value to an object.
-            var pos = options;
-            options = {};
-            options[_which] = pos;
-          }
-
-          // Add the optional second parameter.
-          if (relative !== null && relative !== undefined) {
-            // Add the value to our options.
-            options.relative = relative;
-          }
-
-          // Merge in the defaults.
-          var defaults = {
-            relative: false
-          }
-          defaults[_which] = currentPos;
-
-          var options = $.extend(defaults, options);
-
-          // Call any functions passed as parameters.
-          if (jQuery.isFunction(options[_which])) {
-            options[_which] = options[_which].call();
-          }
-          if (jQuery.isFunction(options.relative)) {
-            options.relative = options.relative.call();
-          }
-
-          // Allow for a relative assignment.
-          if (options.relative) {
-            options[_which] += currentPos;
-          }
-
-          return $(this).setposxyz(_which, options[_which]);
-        },
-
-        /**
-         * This function changes the x coordinate of the selected sprite
-         **/
-        posx: function(x){
-          return $(this).x(x);
-/*            var
-                gameQuery = this[0].gameQuery,
-                refreshBoundingCircle = $.gameQuery.playground && !$.gameQuery.playground.disableCollision
-            ;
-
-            if(x !== undefined) {
-                gameQuery.posx = x;
-                if(refreshBoundingCircle){
-                    gameQuery.boundingCircle.x = x+gameQuery.width/2;
-                }
-
-                this.css("left", ""+(x-gameQuery.posOffsetX)+"px");
-                this.css("top", ""+(gameQuery.posy-gameQuery.posOffsetY)+"px");
-
-                return this;
-            } else {
-                return gameQuery.posx;
-            }*/
-        },
-
-        /**
-         * This function changes the y coordinate of the selected sprite
-         **/
-        posy: function(y){
-          return $(this).y(y);
-/*            var
-                gameQuery = this[0].gameQuery,
-                refreshBoundingCircle = $.gameQuery.playground && !$.gameQuery.playground.disableCollision
-            ;
-
-            if(y !== undefined) {
-                gameQuery.posy = y;
-                if(refreshBoundingCircle){
-                    gameQuery.boundingCircle.y = y+gameQuery.height/2;
-                }
-
-                this.css("left", ""+(gameQuery.posx-gameQuery.posOffsetX)+"px");
-                this.css("top", ""+(y-gameQuery.posOffsetY)+"px");
-
-                return this;
-            } else {
-                return gameQuery.posy;
-            }*/
-        },
-
-        posz: function(z) {
-          return $(this).z(z);
+        
+        setxyz: function(option, relative) {
+        	var gameQuery = this[0].gameQuery;
+        	
+        	for (coordinate in option) {
+        		// Update the gameQuery object
+        		switch (coordinate) {
+        			case 'x':
+        				if(relative) {
+        					option.x += gameQuery.posx;
+        				}
+        				gameQuery.posx = option.x;
+        				this.css("left",""+(gameQuery.posx + gameQuery.posOffsetX)+"px");
+        				break;
+        				
+        			case 'y':
+        				if(relative) {
+        					option.y += gameQuery.posy;
+        				}
+	        			gameQuery.posy = option.y;
+	        			this.css("top",""+(gameQuery.posy + gameQuery.posOffsetY)+"px");
+        				break;
+        				
+        			case 'z':
+        				if(relative) {
+        					option.z += gameQuery.posz;
+        				}
+	        			gameQuery.posz = option.z;
+	        			this.css("z-index",gameQuery.posz);
+        				break; 
+        		}
+        	}
+        	$.gameQuery.update(gameQuery, option);
+        	return this;
         }
 	});
-
-	// This is an hijack to keep track of the change in the sprites, and group positions and size
-	var oldCssFunction = $.fn.css;
-	$.fn.css = function(key, value) {
-        // This is the list of parameters that we watch for
-        var sensibleKey = {left: true, top: true, height: true, width: true};
-
-        // This is the function that takes care of warning $.gameQuery.update when a watched parameter
-        // changes. If a function was passed instead of a fix value we call it first to compute the value.
-        var testfunction = function (index, oldValue){
-            var obj = {};
-            var result;
-
-            if(typeof value == "function"){
-                result = value.apply(this,[index, oldValue]);
-            } else {
-                result = value;
-            }
-
-            obj[key]= result;
-            $.gameQuery.update(this, obj);
-
-            return result;
-        };
-
-        // This check for the kind of css() call
-        if(typeof key == "object") {
-            // Have we an object literal? Then we deserialize the call to the watched parameters
-            for(sensible in sensibleKey){
-                if(key[sensible]){
-                    arguments.callee.apply(this,[sensible, key[sensible]]);
-                    delete key[sensible];
-                }
-            }
-            return oldCssFunction.apply(this,[key, value]);
-        } else {
-            // Otherwise we just interscept the call to watched parameters
-            if(value && sensibleKey[key]){
-                return oldCssFunction.apply(this,[key, testfunction]);
-            }
-            // or just call the standard css() function
-            return oldCssFunction.apply(this,[key, value]);
-        }
-	};
-
+	
 })(jQuery);
