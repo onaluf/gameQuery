@@ -1,0 +1,17 @@
+h1. gameQuery
+
+h2. About
+
+gameQuery is a smallish plugin for jQuery that helps make javascript game development easier by adding some simple game-related classes and functions. 
+
+For more information please look at the project's website http://gamequery.onaluf.org
+
+You can follow the project at http://www.twitter.com/gameQuery
+
+h2. Problem reports
+
+For bug report or feature request please use the github tool.
+
+h2. Contributing
+
+For more information about contributing to the project take a look at the github wiki https://github.com/onaluf/gameQuery/wiki

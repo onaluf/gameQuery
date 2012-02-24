@@ -542,18 +542,18 @@ $(function(){
 			sidemove = 0;
 			
 			//what direction the prob is moving to?
-			var currentPos = parseInt(this.armdiv.css("left"));
+			var currentPos = this.armdiv.x();
 			if(currentPos < ((moveDestinationX*spriteWidth))){ // we need to go to the right
 				if(currentPos+incremant < (moveDestinationX*spriteWidth)){
-					this.armdiv.css("left", currentPos+incremant);
+					this.armdiv.x(incremant, true);
 				} else {
-					this.armdiv.css("left", (moveDestinationX*spriteWidth));
+					this.armdiv.x(moveDestinationX*spriteWidth);
 				}
 			} else if (currentPos > (moveDestinationX*spriteWidth)) { //we need to go to the left
 				if(currentPos-incremant > (moveDestinationX*spriteWidth)){
-					this.armdiv.css("left", currentPos-incremant);
+					this.armdiv.x(-incremant, true);
 				} else {
-					this.armdiv.css("left", (moveDestinationX*spriteWidth));
+					this.armdiv.x(moveDestinationX*spriteWidth);
 				}
 			}
 		}
@@ -586,7 +586,7 @@ $(function(){
 				}
 								
 				var incremant = 15;
-				var currentPos = parseInt(this.armdiv.css("left"));
+				var currentPos = this.armdiv.x();
 				// Are we at a stop ?
 				if(moveDestinationX*spriteWidth == currentPos) {
 						if(wanapick){ //the user ask for a pick!
@@ -637,12 +637,12 @@ $(function(){
 			// This state is when the prob is going UP to take a ball
 			case PROBE_PICKING:
 				var incremant = 45;
-				var currentPos =  parseInt($("#probe").css("top"));
+				var currentPos =  $("#probe").y();
 				if(currentPos-incremant > pickDestination*60){
-					$("#probe").css("top", currentPos-incremant);
+					$("#probe").y(currentPos-incremant);
 				} else {
 					//we reached the ball!
-					$("#probe").css("top", pickDestination*60);
+					$("#probe").y(pickDestination*60);
 					$("#"+destination+"-"+pickDestination).remove();
 					$("#probe").addSprite("pickedBall",{posx: 0, posy: 0, width: spriteWidth, height: spriteHeight, animation: spriteList[storedColor]})
 					ballsArray[destination][pickDestination] = null;
@@ -665,11 +665,11 @@ $(function(){
 			// this state is when the prob is going down from taking a ball
 			case PROBE_PICKED:
 				var incremant = 45;
-				var currentPos =  parseInt($("#probe").css("top"));
+				var currentPos =  $("#probe").y();
 				if(currentPos + incremant < 460){
-					$("#probe").css("top", currentPos+incremant);
+					$("#probe").y(currentPos+incremant);
 				} else {
-					$("#probe").css("top", 460);
+					$("#probe").y(460);
 					// we add a ball to the container:
 					$("#pickedBall").remove();
 					if(storedNumber == 1){
@@ -684,11 +684,11 @@ $(function(){
 			//this state is when the prob is going up to drop all the balls it contain
 			case PROBE_DROPING:
 				var incremant = 45;
-				var currentPos =  parseInt($("#dropBeam").css("top"));
+				var currentPos =  $("#dropBeam").y();
 				if(currentPos - incremant > pickDestination*spriteHeight+20){
-					$("#dropBeam").css("top", currentPos-incremant);
+					$("#dropBeam").y(currentPos-incremant);
 				} else {
-					$("#dropBeam").css("top", pickDestination*spriteHeight+20);
+					$("#dropBeam").y(pickDestination*spriteHeight+20);
 					$("#glowBeam").remove();
 					gameState = PROBE_DROPED;
 				}
@@ -792,9 +792,9 @@ $(function(){
 				var movedCount = 0;
 				for(var i=0; i < numberOfColumn; i++){
 					if(mobileElement[i] != null){
-						var currentPos = parseInt($("#collapse-"+i).css("top"));
+						var currentPos = $("#collapse-"+i).y();
 						if(currentPos - incremant > (mobileElement[i].destination*spriteWidth+20)){
-							$("#collapse-"+i).css("top", currentPos - incremant);
+							$("#collapse-"+i).y(currentPos - incremant);
 							movedCount++;
 						} else {
 							// the collapsing block is at its desitnation
@@ -864,10 +864,10 @@ $(function(){
 				break;
 			case BOARD_EXPAND:
 				var incremant = 16;
-				var currentPos =  parseInt($("#board").css("top"));
+				var currentPos =  $("#board").y();
 				if(currentPos + incremant < 50){
 					//we slide down to make place to the new line
-					$("#board").css("top", currentPos+incremant);
+					$("#board").y(currentPos+incremant);
 				} else {
 					// There we have first to test if the displacement have make a ball cross the line
 					var overflow = false;
@@ -885,7 +885,7 @@ $(function(){
 					} else { // nop! we'r good we can add a lline
 						// now we can hidde the board and start working on it
 						$("#board").contents( ).remove();
-						$("#board").css("top", 0);
+						$("#board").y(0);
 						// shift the balls arrays line down and add a new line:
 						for(var i=0; i<numberOfColumn; i++){
 							for(var j=maxRow-2; j > 0; j--){

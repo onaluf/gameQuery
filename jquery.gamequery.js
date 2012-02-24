@@ -470,11 +470,10 @@
                                 gameQuery.boundingCircle.y = gameQuery.posy+gameQuery.height/2;
                             }
                             break;
-                        case "width":
-                            gameQuery.width = parseFloat(transformation.width);
-                            break;
-                        case "height":
-                            gameQuery.height = parseFloat(transformation.height);
+                        case "w":
+                        case "h":
+                            gameQuery.boundingCircle.originalRadius = Math.sqrt(Math.pow(gameQuery.width,2) + Math.pow(gameQuery.height,2))/2
+                            gameQuery.boundingCircle.radius = gameQuery.factor*gameQuery.boundingCircle.originalRadius;
                             break;
                         case "angle": //(in degree)
                             gameQuery.angle = parseFloat(transformation.angle);
@@ -1216,11 +1215,18 @@
 /** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
 
         /**
-         * TODO
+         * This is the main function to change the sprite/group/tilemap position on screen.
+         * The three first agruments are the coordiate (double) and the last one is a flag
+         * to specify if the coordinate given are absolute or relative.
+         * 
+         * If no argument is specified then the functions act as a getter and return a 
+         * object {x,y,z}
+         * 
+         * Please note that the z coordinate is just the z-index. 
          */
         xyz: function(x, y, z, relative) {
              if (x === undefined) {
-             	return this.getxyz({x: true, y: true, z: true});
+             	return this.getxyz();
 	         } else {
 	         	return this.setxyz({x: x, y: y, z: z}, relative);
 	         }
@@ -1263,17 +1269,50 @@
 	         }
         },
         
+        /**
+         * This is the main function to change the sprite/group/tilemap dimension on screen.
+         * The two first agruments are the width and height (double) and the last one is a 
+         * flag to specify if the dimesion given are absolute or relative.
+         * 
+         * If no argument is specified then the functions act as a getter and return a 
+         * object {w,h} 
+         */
+        wh: function(w, h, relative) {
+        	if (w === undefined) {
+             	return this.getwh();
+	         } else {
+	         	return this.setwh({w: w, h: h}, relative);
+	         }
+        },
         
         /**
-         * Those two functions are 'private', not supposed to be used outside 
+         * Those function are all all shortcut for the .wh(...) function. Please look 
+         * at this function for a detailed documentation. 
+         */
+        w: function(value, relative) {
+        	if (value === undefined) {
+             	return this.getwh().w;
+	         } else {
+	         	return this.setwh({w: value}, relative);
+	         }
+        },
+        
+        h: function(value, relative) {
+        	if (value === undefined) {
+             	return this.getwh().h;
+	         } else {
+	         	return this.setwh({h: value}, relative);
+	         }
+        },
+        
+        /**
+         * Those four functions are 'private', not supposed to be used outside 
          * of the library. They are NOT part of the API and so are not guaranteed
-         * to remain unchanged. You should really use .xyz() instead.
-         * 
-         * They contain the impementation of the xyz() family of function.
+         * to remain unchanged. You should really use .xyz() and .wh() instead.
          */
         getxyz: function() {
         	var gameQuery = this[0].gameQuery;
-        	return {x: gameQuery.posx, y: gameQuery.posy, z: gameQuery.posz}
+        	return {x: gameQuery.posx, y: gameQuery.posy, z: gameQuery.posz};
         },
         
         setxyz: function(option, relative) {
@@ -1305,6 +1344,38 @@
 	        			gameQuery.posz = option.z;
 	        			this.css("z-index",gameQuery.posz);
         				break; 
+        		}
+        	}
+        	$.gameQuery.update(gameQuery, option);
+        	return this;
+        },
+        
+        getwh: function() {
+        	var gameQuery = this[0].gameQuery;
+        	return {w: gameQuery.width, h: gameQuery.height};
+        },
+        
+        setwh: function(option, relative) {
+        	var gameQuery = this[0].gameQuery;
+        	
+        	for (coordinate in option) {
+        		// Update the gameQuery object
+        		switch (coordinate) {
+        			case 'w':
+        				if(relative) {
+        					option.w += gameQuery.width;
+        				}
+        				gameQuery.width = option.w;
+        				this.css("width","" + gameQuery.width + "px");
+        				break;
+        				
+        			case 'h':
+        				if(relative) {
+        					option.h += gameQuery.height;
+        				}
+	        			gameQuery.height = option.h;
+	        			this.css("height","" + gameQuery.height + "px");
+        				break;
         		}
         	}
         	$.gameQuery.update(gameQuery, option);

@@ -1,6 +1,6 @@
 var PLAYGROUND_WIDTH = 600 ;
 var PLAYGROUND_HEIGHT = 300;
-var NUMBER_OF_REDS = 50;
+var NUMBER_OF_REDS = 500;
 var bluePosX = 285;
 var bluePosY = 135;
 	
@@ -77,6 +77,7 @@ $(function(){
 		newSprite[0].gameQuery.speedx = Math.random()*2;
 		newSprite[0].gameQuery.speedy = Math.random()*2;
 		newSprite[0].gameQuery.dead = false;
+		newSprite[0].gameQuery.indexinlist = listOfReds.length;
 		listOfReds.push(newSprite);
 	}
 	
@@ -85,8 +86,8 @@ $(function(){
 	$.playground().registerCallback(function(){
 		//Update the position of the red dots
 		var rediter = NUMBER_OF_REDS;
-		while(rediter--){
-			if(listOfReds[rediter][0]){
+		while(rediter--){ 
+			if(listOfReds[rediter]){
 				updateSquare(listOfReds[rediter], 3);
 			}
 		}
@@ -110,9 +111,12 @@ $(function(){
 		
 		//check if some red blocks touch the blue square
 		$("#blue").collision().each(function(){
-			// make them blink:
+			// make them explode:
 			if(!this.gameQuery.dead){
-				$(this).setAnimation(redExplosion, function(me){$(me).remove();}).css("width","60px").css("height","60px");
+				$(this).setAnimation(redExplosion, function(me){
+						listOfReds[$(me)[0].gameQuery.indexinlist] = undefined;
+						$(me).remove();
+					}).w(60).h(60);
 				$(this).xy(-15, -15, true);
 				this.gameQuery.speedx = this.gameQuery.speedx/3;
 				this.gameQuery.speedy = this.gameQuery.speedy/3;
