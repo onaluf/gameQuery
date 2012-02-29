@@ -207,20 +207,24 @@
                                     }
                                 }
                             }
-                            // update the background:
-                            if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL){
-                                if(gameQuery.multi){
-                                    $(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.multi)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
-                                } else {
-                                    $(this).css("background-position",""+(-gameQuery.animation.offsetx)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
-                                }
-                            } else if(gameQuery.animation.type & $.gameQuery.ANIMATION_HORIZONTAL) {
-                                if(gameQuery.multi){
-                                    $(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.animation.delta*gameQuery.currentFrame)+"px "+(-gameQuery.animation.offsety-gameQuery.multi)+"px");
-                                } else {
-                                    $(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.animation.delta*gameQuery.currentFrame)+"px "+(-gameQuery.animation.offsety)+"px");
-                                }
-                            }
+
+							//update the background:
+							if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL){
+								if(gameQuery.multi){
+									$(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.multi)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
+								} else {
+									$(this).css("background-image","url('"+gameQuery.animation.imageURL+"')");
+									$(this).css("background-position",""+(-gameQuery.animation.offsetx)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
+								}
+							} else if(gameQuery.animation.type & $.gameQuery.ANIMATION_HORIZONTAL) {
+								if(gameQuery.multi){
+									$(this).css("background-image","url('"+gameQuery.animation.imageURL+"')");
+									$(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.animation.delta*gameQuery.currentFrame)+"px "+(-gameQuery.animation.offsety-gameQuery.multi)+"px");
+								} else {
+									$(this).css("background-image","url('"+gameQuery.animation.imageURL+"')");
+									$(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.animation.delta*gameQuery.currentFrame)+"px "+(-gameQuery.animation.offsety)+"px");
+								}
+							}
                         }
                         gameQuery.idleCounter = (gameQuery.idleCounter+1)%gameQuery.animation.rate;
                     }
