@@ -674,7 +674,7 @@
 
             //if the game has already started we want to add the animation's image as a background now:
             if(options.animation){
-                if($.gameQuery.resourceManager.running){
+                if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
                     $("#"+sprite).css("background-image", "url("+options.animation.imageURL+")");
                 }
                 if(options.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
