@@ -879,7 +879,9 @@
                 if(animation){
                     gameQuery.animation = animation;
                     gameQuery.currentFrame = 0;
-                    this.css({"background-image": "url("+animation.imageURL+")", "background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
+
+					if (animation.imageURL !== '') {this.css("backgroundImage", "url('"+animation.imageURL+"')");}
+					this.css({"background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
 
                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
                         this.css("background-repeat", "repeat-x");
