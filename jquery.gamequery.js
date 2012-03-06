@@ -694,7 +694,8 @@
 
             //if the game has already started we want to add the animation's image as a background now:
             if(options.animation){
-                if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
+	            // the second test is a fix for default background	(https://github.com/onaluf/gameQuery/issues/3)
+                if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){ 
                     $("#"+sprite).css("background-image", "url("+options.animation.imageURL+")");
                 }
                 if(options.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
