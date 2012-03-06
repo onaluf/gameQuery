@@ -16,7 +16,10 @@
                 var multiOffsetVerticalAnimation = new $.gameQuery.Animation({imageURL: "mov.png", type: $.gameQuery.ANIMATION_VERTICAL | $.gameQuery.ANIMATION_MULTI, offsetx: 100, offsety: 100, numberOfFrame: 4, delta: 32, rate: 300, distance: 32});
                 var multiOffsetHorizontalAnimation = new $.gameQuery.Animation({imageURL: "moh.png", type: $.gameQuery.ANIMATION_HORIZONTAL | $.gameQuery.ANIMATION_MULTI, offsetx: 100, offsety: 100, numberOfFrame: 4, delta: 32, rate: 300, distance: 32});
                 
-                $("#playground").playground({height: 50, width: 350});
+                var pingpongAnimation = new $.gameQuery.Animation({imageURL: "rebound.png", type: $.gameQuery.ANIMATION_HORIZONTAL |  $.gameQuery.ANIMATION_PINGPONG, numberOfFrame: 9, delta: 64, rate: 60});
+                var multiPingpongAnimation = new $.gameQuery.Animation({imageURL: "reboundm.png", type: $.gameQuery.ANIMATION_HORIZONTAL |  $.gameQuery.ANIMATION_PINGPONG | $.gameQuery.ANIMATION_MULTI, numberOfFrame: 9, delta: 64, rate: 60, distance: 64});
+                
+                $("#playground").playground({height: 64, width: 414});
                 
                 $.playground()
                     .addSprite("simpleVertical",{animation: simpleVerticalAnimation, posx: 0})
@@ -26,12 +29,15 @@
                     .addSprite("simpleOffsetVertical",{animation: simpleOffsetVerticalAnimation, posx: 150})
                     .addSprite("simpleOffsetHorizontal",{animation: simpleOffsetHorizontalAnimation, posx: 184})
                     .addSprite("multiOffsetVertical",{animation: multiOffsetVerticalAnimation, posx: 225})
-                    .addSprite("multiOffsetHorizontal",{animation: multiOffsetHorizontalAnimation, posx: 259});
+                    .addSprite("multiOffsetHorizontal",{animation: multiOffsetHorizontalAnimation, posx: 259})
+                    .addSprite("pingpong",{animation: pingpongAnimation, posx: 286, width: 64, height: 64})
+                    .addSprite("multiPingpong",{animation: multiPingpongAnimation, posx: 350, width: 64, height: 64});
                 
                 $("#multiVertical").setAnimation(1);
                 $("#multiHorizontal").setAnimation(1);
                 $("#multiOffsetVertical").setAnimation(1);
                 $("#multiOffsetHorizontal").setAnimation(1);
+                $("#multiPingpong").setAnimation(1);
                 
                 $.playground().startGame();
             });

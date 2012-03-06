@@ -15,12 +15,6 @@
       */
     var GAMEQUERY_NAMESPACE = 'GAMEQUERY__';
 
-    /**
-      * An associative array of the CSS properties to affect for x and y.
-      */
-    var GAMEQUERY_XY_ATTRIBUTES = {x: 'left', y: 'top', z: 'z-index'};
-    var GAMEQUERY_XY_DIMENSION = {x: 'width', y: 'height'};
-
     $.extend({ gameQuery: {
         /**
          * This is the Animation Object
@@ -58,11 +52,13 @@
         },
 
         // "constants" for the different type of an animation
-        ANIMATION_VERTICAL:   1,  // genertated by a verical offset of the background
-        ANIMATION_HORIZONTAL: 2,  // genertated by a horizontal offset of the background
-        ANIMATION_ONCE:       4,  // played only once (else looping indefinitly)
+        ANIMATION_VERTICAL:   1,  // Genertated by a verical offset of the background
+        ANIMATION_HORIZONTAL: 2,  // Genertated by a horizontal offset of the background
+        ANIMATION_ONCE:       4,  // Played only once (else looping indefinitly)
         ANIMATION_CALLBACK:   8,  // A callack is exectued at the end of a cycle
         ANIMATION_MULTI:      16, // The image file contains many animations
+        ANIMATION_PINGPONG:   32, // At the last frame the animation it reversses 
+                                  // (if used in conjunction with ONCE it will have no effect)
 
         // "constants" for the different type of geometry for a sprite
         GEOMETRY_RECTANGLE:   1,
@@ -81,7 +77,7 @@
             running:    false, // State of the game,
 
             /**
-             * This function the covers things to load befor to start the game.
+             * This function the covers things to load before to start the game.
              **/
             preload: function() {
                 //Start loading the images
@@ -122,13 +118,7 @@
                         soundCount++;
                     }
                 }
-                //update the loading bar
-                if(loadbarEnabled){
-                    $("#"+$.gameQuery.loadbar.id).width((imageCount+soundCount)*loadBarIncremant);
-                    if($.gameQuery.loadbar.callback){
-                        $.gameQuery.loadbar.callback((imageCount+soundCount)/(this.animations.length + this.sounds.length)*100);
-                    }
-                }
+                // calls the load callback with the current progress
                 if($.gameQuery.resourceManager.loadCallback){
                     var percent = (imageCount+soundCount)/(this.animations.length + this.sounds.length)*100;
                     $.gameQuery.resourceManager.loadCallback(percent);
@@ -186,9 +176,9 @@
                             // does 'this' loops?
                             if(gameQuery.animation.type & $.gameQuery.ANIMATION_ONCE){
                                 if(gameQuery.currentFrame < gameQuery.animation.numberOfFrame-2){
-                                    gameQuery.currentFrame++;
+                                    gameQuery.currentFrame += gameQuery.frameIncrement;
                                 } else if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-2) {
-                                    gameQuery.currentFrame++;
+                                    gameQuery.currentFrame += gameQuery.frameIncrement;
                                     // does 'this' has a callback ?
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
                                         if($.isFunction(gameQuery.callback)){
@@ -197,7 +187,15 @@
                                     }
                                 }
                             } else {
-                                gameQuery.currentFrame = (gameQuery.currentFrame+1)%gameQuery.animation.numberOfFrame;
+                            	if(gameQuery.animation.type & $.gameQuery.ANIMATION_PINGPONG){
+                            		if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-1 && gameQuery.frameIncrement == 1) {
+                            			gameQuery.frameIncrement = -1;
+                            		} else if (gameQuery.currentFrame == 0 && gameQuery.frameIncrement == -1) {
+                            			gameQuery.frameIncrement = 1;
+                            		}
+                            	}
+                            	
+                            	gameQuery.currentFrame = (gameQuery.currentFrame+gameQuery.frameIncrement)%gameQuery.animation.numberOfFrame;
                                 if(gameQuery.currentFrame == 0){
                                     // does 'this' has a callback ?
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
@@ -229,7 +227,7 @@
             },
 
             /**
-             * This function refresh a unique tile-map here 'this' represent a dom object
+             * This function refresh a unique tile-map, here 'this' represent a dom object
              **/
             refreshTilemap: function() {
                 //Call this function on all the children:
@@ -664,6 +662,7 @@
                 posOffsetY: 	0,
                 idleCounter:	0,
                 currentFrame:	0,
+                frameIncrement: 1,
                 geometry:       $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:          0,
                 factor:         1,
@@ -732,8 +731,6 @@
                 posOffsetX: 	0,
                 posOffsetY: 	0
             }, options);
-
-            //var newSpriteElem = "<div id='"+sprite+"' style='position: absolute; display: block; overflow: hidden; height: "+options.height+"px; width: "+options.width+"px; left: "+options.posx+"px; top: "+options.posy+"px; background-position: 0px 0px;' />";
 
             var tileSet = $("<div class='tileSet' style='position: absolute; display: block; overflow: hidden;' />");
             tileSet.css({top: options.posy, left: options.posx, height: options.height*options.sizey, width: options.width*options.sizex}).attr("id",name);
@@ -860,9 +857,9 @@
         },
 
 		/**
-		 * Start the animation (if paused)
+		 * Resume the animation (if paused)
 		 */
-		startAnimation: function() {
+		resumeAnimation: function() {
             this[0].gameQuery.playing = true;
         },
 
