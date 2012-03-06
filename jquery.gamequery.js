@@ -241,10 +241,17 @@
                                 // does 'this' loops?
                                 if(gameQuery.animations[i].type & $.gameQuery.ANIMATION_ONCE){
                                     if(gameQuery.frameTracker[i] < gameQuery.animations[i].numberOfFrame-1){
-                                        gameQuery.frameTracker[i]++;
+                                        gameQuery.frameTracker[i] += gameQuery.frameIncrement[i];
                                     }
                                 } else {
-                                    gameQuery.frameTracker[i] = (gameQuery.frameTracker[i]+1)%gameQuery.animations[i].numberOfFrame;
+                                	if(gameQuery.animations[i].type & $.gameQuery.ANIMATION_PINGPONG){
+	                            		if(gameQuery.frameTracker[i] == gameQuery.animations[i].numberOfFrame-1 && gameQuery.frameIncrement[i] == 1) {
+	                            			gameQuery.frameIncrement[i] = -1;
+	                            		} else if (gameQuery.frameTracker[i] == 0 && gameQuery.frameIncrement[i] == -1) {
+	                            			gameQuery.frameIncrement[i] = 1;
+	                            		}
+	                            	}
+                                    gameQuery.frameTracker[i] = (gameQuery.frameTracker[i]+gameQuery.frameIncrement[i])%gameQuery.animations[i].numberOfFrame;
                                 }
                             }
                             gameQuery.idleCounter[i] = (gameQuery.idleCounter[i]+1)%gameQuery.animations[i].rate;
@@ -255,10 +262,17 @@
                             // does 'this' loops?
                             if(gameQuery.animations.type & $.gameQuery.ANIMATION_ONCE){
                                 if(gameQuery.frameTracker < gameQuery.animations.numberOfFrame-1){
-                                    gameQuery.frameTracker++;
+                                    gameQuery.frameTracker += gameQuery.frameIncrement;
                                 }
                             } else {
-                                gameQuery.frameTracker = (gameQuery.frameTracker+1)%gameQuery.animations.numberOfFrame;
+                            	if(gameQuery.animations.type & $.gameQuery.ANIMATION_PINGPONG){
+                            		if(gameQuery.frameTracker == gameQuery.animations.numberOfFrame-1 && gameQuery.frameIncrement == 1) {
+                            			gameQuery.frameIncrement = -1;
+                            		} else if (gameQuery.frameTracker == 0 && gameQuery.frameIncrement == -1) {
+                            			gameQuery.frameIncrement = 1;
+                            		}
+                            	}
+                                gameQuery.frameTracker = (gameQuery.frameTracker+gameQuery.frameIncrement)%gameQuery.animations.numberOfFrame;
                             }
                         }
                         gameQuery.idleCounter = (gameQuery.idleCounter+1)%gameQuery.animations.rate;
@@ -743,18 +757,22 @@
             if($.isArray(animationList)){
                 var frameTracker = [];
                 var idleCounter = [];
+                var frameIncrement = [];
                 for(var i=0; i<animationList.length; i++){
                     frameTracker[i] = 0;
                     idleCounter[i] = 0;
+                    frameIncrement[i] = 1;
                 }
                 tileSet[0].gameQuery = options
                 tileSet[0].gameQuery.frameTracker = frameTracker;
                 tileSet[0].gameQuery.animations = animationList;
                 tileSet[0].gameQuery.idleCounter =  idleCounter;
+                tileSet[0].gameQuery.frameIncrement = frameIncrement;
                 tileSet[0].gameQuery.tileSet = true;
             } else {
                 tileSet[0].gameQuery = options
                 tileSet[0].gameQuery.frameTracker = 0;
+                tileSet[0].gameQuery.frameIncrement = 1;
                 tileSet[0].gameQuery.animations = animationList;
                 tileSet[0].gameQuery.idleCounter =  0;
                 tileSet[0].gameQuery.tileSet = true;
