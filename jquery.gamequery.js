@@ -694,7 +694,7 @@
 
             //if the game has already started we want to add the animation's image as a background now:
             if(options.animation){
-                if($.gameQuery.resourceManager.running){
+                if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
                     $("#"+sprite).css("background-image", "url("+options.animation.imageURL+")");
                 }
                 if(options.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
@@ -904,7 +904,9 @@
                 if(animation){
                     gameQuery.animation = animation;
                     gameQuery.currentFrame = 0;
-                    this.css({"background-image": "url("+animation.imageURL+")", "background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
+
+					if (animation.imageURL !== '') {this.css("backgroundImage", "url('"+animation.imageURL+"')");}
+					this.css({"background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
 
                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
                         this.css("background-repeat", "repeat-x");
