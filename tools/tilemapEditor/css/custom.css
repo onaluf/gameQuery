@@ -1,0 +1,250 @@
+/* Standard style redefinition */
+body {
+	background-color: #666;
+	font-family: 'Molengo', arial, serif; 
+	font-size: 12pt;
+	color: white;
+}
+input {
+    font-family: 'Molengo', arial, serif; 
+}
+select {
+    font-family: 'Molengo', arial, serif; 
+}
+
+a{
+	text-decoration: none;
+	color: #FFF;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+button::-moz-focus-inner { border: 0; }
+button {
+	-moz-border-radius: 3px;
+ 	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	
+	border: thin solid #444;
+	background-color: #666;
+	color: white;
+	text-shadow: -1px -1px 0px #000;
+	
+	background-image: -moz-linear-gradient(top, #888, #555);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #888),color-stop(1, #555));
+	
+	font-family: 'Inconsolata', arial, serif;
+	font-size: 10pt;
+	padding: 2px;
+	width: 40px;
+	
+	cursor: pointer;
+}
+button:hover {
+	background-color: #777;
+    color: white;
+	
+	background-image: -moz-linear-gradient(top, #998, #665);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #998),color-stop(1, #667));	
+}
+button:active {
+	-moz-box-shadow: inset 0px 0px 5px #000;
+	-webkit-box-shadow: inset 0px 0px 5px #000;
+	box-shadow: inset 0px 0px 5px #000;
+}
+button.disabled {
+	color: #aaa;
+	text-shadow: -1px -1px 0px #444;
+	cursor: default;
+}
+
+#toolbarTile{
+	height: 22px;
+	padding: 5px;
+	background-image: -moz-linear-gradient(top, #888, #555);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #888),color-stop(1, #555));
+	
+	text-shadow: -1px -1px 0px #000;
+}
+
+#tilemap{
+	-moz-box-shadow: inset 0px 0px 50px #000;
+	-webkit-box-shadow: inset 0px 0px 50px #000;
+	box-shadow: inset 0px 0px 50px #000;
+	background-color: #444;
+    overflow:auto;
+    position:relative;
+}
+#grid, #tiles {
+    position: absolute;
+    left: 30px;
+    top: 30px;
+} 
+
+#toolbarAnimation{
+	height: 22px;
+	padding: 5px;
+	background-image: -moz-linear-gradient(top, #888, #555);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #888),color-stop(1, #555));
+	
+	text-shadow: -1px -1px 0px #000;
+}
+
+#animations{
+	height: 128px;
+	background-color: #444;
+	-moz-box-shadow: inset 0px 0px 5px #000;
+	-webkit-box-shadow: inset 0px 0px 5px #000;
+	box-shadow: inset 0px 0px 5px #000;
+
+}
+
+div.animation {
+	height: 100px;
+	width: 100px;
+	float: left;
+	margin: 10px;
+	
+	border: thin solid #333;
+	-moz-border-radius: 5px;
+ 	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	
+	overflow: hidden;
+	position: relative;
+	
+	font-size: 10pt;
+	
+	background-image: -moz-linear-gradient(top, #666, #444);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #666),color-stop(1, #444));
+	
+	cursor: pointer;
+	
+	-moz-box-shadow: 0px 0px 10px 0.1px #000;
+	-webkit-box-shadow: 0px 0px 10px 0.1px #000;
+	box-shadow: 0px 0px 10px 0.1px #000;
+}
+
+div.selected {
+    border: thin dotted #FF0;
+}
+
+div.animation:hover {
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    -webkit-transition: all 0.3s ease-out;
+    border: thin solid #FF0;
+}
+
+div.animation a.close {
+	position: absolute;
+	right: 5px;
+	top: 1px;
+	font-weight: bold;
+}
+div.animation a.close:hover {
+	font-weight: bold;
+	color: #FF0;	
+	text-decoration: none;
+}
+div.animation span.name {
+	position: absolute;
+	bottom: 2px;
+	width: 100%;
+	text-align: center;
+}
+div.grid{
+    position: absolute;
+    border: thin dotted #FF0;
+}
+
+div.grid:hover {
+    -moz-transition: all 0.1s ease-out;
+    -o-transition: all 0.1s ease-out;
+    -webkit-transition: all 0.1s ease-out;
+	border: thin solid #FF0;
+}
+
+
+.right {
+    float: right;
+}
+
+#helpButton {
+    width: 20px;
+}
+
+
+#overlay {
+	display: none;
+	
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgba(0,0,0,0.5);
+	height: 100%;
+	width: 100%;
+	z-index: 100;
+}
+
+.overlay {
+    color: black;
+    position: absolute;
+    z-index: 100;
+    
+    display: none;
+    
+    background-color: rgba(230,230,230,1);
+    
+    border: thin solid black;
+    -moz-border-radius: 10px;
+ 	-webkit-border-radius: 10px;
+	border-radius: 10px;
+    
+    -moz-box-shadow: 0px 0px 20px 0.1px #000;
+	-webkit-box-shadow: 0px 0px 20px 0.1px #000;
+	box-shadow: 0px 0px 20px 0.1px #000;
+}
+.overlay .header {
+    padding: 5px;
+    font-weight: bold;
+}
+
+.overlay .content {
+    padding: 5px;
+    font-size: 0.9em;
+}
+
+.overlay button {
+    width: 60px;
+    
+    color: black;
+	text-shadow: none;
+    border-color: #999;
+    
+    background-image: -moz-linear-gradient(top, #fff, #ddd);
+	background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #fff),color-stop(1, #ddd));
+}
+
+.overlay table {
+    color: black;
+}
+
+.overlay table td {
+    padding: 5px;
+}
+
+.overlay p {
+    margin-bottom: 1.6em;
+}
+div.overlay a.close {
+    color: black;
+	position: absolute;
+	right: 5px;
+	top: 1px;
+	font-weight: bold;
+}
+div.overlay a.close:hover {
+    text-decoration: none;
+}

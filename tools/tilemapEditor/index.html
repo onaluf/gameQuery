@@ -1,0 +1,85 @@
+<html>
+<head>
+	<title>Tiles Map Editor</title>
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link rel="stylesheet" type="text/css" href="css/custom.css">
+	<script src="js/jquery-1.7.1.js" type="text/javascript"></script>
+	<script src="js/script.js" type="text/javascript"></script>
+	
+	<link href='http://fonts.googleapis.com/css?family=Molengo' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+</head>
+<body>
+	<div id="overlay">
+        <div class="overlay" id="newOverlay">
+            <div class="header">
+                Create a new Tilemap
+            </div>
+            <div class="content">
+                <form id="newForm">
+                    <table>
+                        <tr>
+                            <td><label>number of tiles</label></td>
+                            <td><input size="6" placeholder="width" id="newForm_input_map_width"/></td>
+                            <td>x</td>
+                            <td><input size="6" placeholder="height" id="newForm_input_map_height"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>size of a tile</label></td>
+                            <td><input size="6" placeholder="width" id="newForm_input_tile_width"/></td>
+                            <td>x</td>
+                            <td><input size="6" placeholder="height" id="newForm_input_tile_height"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>type of animations</label></td>
+                            <td colspan="3"><select name="decision" id="newForm_input_animations_type">
+                                <option selected>simple animations</option>
+                                <option>multi-animation</option>
+                            </select></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"><button id="newOK" name="ok">create</button><button class="right" id="newCancel" name="cancel">cancel</button></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+        <div class="overlay" id="helpOverlay" style="width: 200px;">
+	        <div class="header">
+	            Help
+	        </div>
+	        <div class="content">
+	            <strong>Start</strong>
+	            <p>Click on the "new" button to start a new Tile. You will then</p>
+	            <strong>Add an animation to the animation list</strong>
+	            <p></p>
+	            <strong>Remove an animation from the animation list </strong>
+	            <p></p>
+	            <strong>Edit the tile map</strong>
+	            <p></p>
+	            <strong></strong>
+	            <p></p>
+	            <button class="right" id="helpOk" name="cancel">Ok</button>
+	        </div>
+	    </div>
+    </div>
+	<div id="toolbarTile">
+		<span>
+			<span style="font-family: 'Lobster'">Tiles Map Editor</span> &gt;&gt;
+			<button id="newButton">new</button>
+			<button id="saveButton" class="disabled">save</button>
+            <button id="helpButton" class="right">?</button>
+		</span>
+	</div>
+	<div id="tilemap">
+		<div id="tiles"></div>
+		<div id="grid"></div>
+	</div>
+	
+	<div id="toolbarAnimation">
+		Animations >>
+		<button id="newAnimationButton" class="disabled">add</button>
+	</div>
+	<div id="animations"></div>
+</body>
+</html>
