@@ -2,10 +2,10 @@ var PLAYGROUND_WIDTH = 800 ;
 var PLAYGROUND_HEIGHT = 200;
 
 $(function(){
-    // This is the AI that determines the next move 
+    // This is the AI that determines the next move
     // level=0: totaly random
     // level=1: totaly "rational"
-    
+
     // possible move;
     IDLE=          0;
     WALK_FORWARD=  1;
@@ -14,29 +14,29 @@ $(function(){
     KICK=          4;
     BLOCK=         5;
     BEATEN=        6;
-    
+
     //constantes:
     NEAR=         100;
-    
+
     // this is a methods that returns a random element from the given array
     function or(choice){
         return choice[Math.round(Math.random()*(choice.length-1))];
     };
-    
+
     // return the distance between the opponents
     function distance(a, b){
         return Math.abs(a.position().left-b.position().left);
     };
-    
+
     function nextMove(level, a, b){
         if(Math.random() > level){
             return Math.round(Math.random()*5);
         }
         switch(b.data("fighter").currentState){
             // if the adversary is idle or moves away from us we get near him or attack ihm
-            case IDLE: 
-            case WALK_BACKWARD: 
-            case BLOCK: 
+            case IDLE:
+            case WALK_BACKWARD:
+            case BLOCK:
                 if(distance(a,b) < NEAR){
                     return or([KICK, PUNCH, WALK_BACKWARD]);
                 } else {
@@ -44,7 +44,7 @@ $(function(){
                 }
                 break;
             // if the adversary moves toward us we get away or attack ihm
-            case WALK_FORWARD: 
+            case WALK_FORWARD:
                 if(distance(a,b) < NEAR){
                     return or([KICK, PUNCH, WALK_BACKWARD]);
                 } else {
@@ -52,12 +52,12 @@ $(function(){
                 }
                 break;
             // if we are under attack we either block go back or try to fight back
-            case PUNCH: 
+            case PUNCH:
             case KICK:
                 return or([BLOCK, PUNCH, KICK, IDLE]);
                 break;
             // if beaten we block or go back
-            case BEATEN: 
+            case BEATEN:
                 return or([BLOCK, WALK_BACKWARD, IDLE]);
                 break;
         }
@@ -68,38 +68,38 @@ $(function(){
         fighter = sprite.data("fighter");
         adversary = $(fighter.adversary);
         adversaryFighter = adversary.data("fighter");
-        
+
         var nextState = nextMove(0.8, sprite, adversary);
-        
+
         changeAnimation(sprite, fighter.animations, nextState, fighter.currentState);
-        
+
         if(nextState == PUNCH || nextState == KICK){
             sprite.z(20);
         } else if(fighter.currentState == PUNCH || fighter.currentState == KICK){
             sprite.z(0);
         }
-        
+
         fighter.currentState = nextState;
     }
-    
+
     var scrollStage = function (offset){
-    	
+
     	if(offset > 50){
     		offset = 50;
     	} else if(offset < -50) {
     		offset = -50;
     	}
     	$("#foreground").x(-800 + offset/0.5);
-        
+
         $("#ground").x(-300 + offset);
         $("#fighters").x(offset);
-        
+
         $("#background1").x(50 + offset/2);
         $("#background2").x(30 + offset/4);
         $("#background3").x(90 + offset/5);
-    	
+
    	}
-    
+
     /*replace with new*/
     var changeAnimation = function(sprite, animationArry, newAnimation , oldAnimation){
         sprite
@@ -109,10 +109,10 @@ $(function(){
             .y(sprite.position().top  + animationArry[newAnimation].deltaY - animationArry[oldAnimation].deltaY)
             .x(sprite.position().left + animationArry[newAnimation].deltaX - animationArry[oldAnimation].deltaX);
     };
-    
+
     // the game
     $("#playground").playground({height: PLAYGROUND_HEIGHT, width: PLAYGROUND_WIDTH, refreshRate: 30, keyTracker: true});
-    
+
     //Playground Sprites
     var foreground 	= new $.gameQuery.Animation({imageURL: "./stage/foreground.png", type: $.gameQuery.ANIMATION_VERTICAL});
     var ground 		= new $.gameQuery.Animation({imageURL: "./stage/ground.png"});
@@ -139,8 +139,8 @@ $(function(){
 								{posx:-800, posy: 165,
 								 height: 44, width: 2000,
 								 animation: foreground});
-	$("#sceengraph").css("background-color","#121423");
-    
+	$("#scenegraph").css("background-color","#121423");
+
     //Fighters
     var cvs = {
         currentState : IDLE,
@@ -196,7 +196,7 @@ $(function(){
                                  geometry: $.gameQuery.GEOMETRY_RECTANGLE,
                                  callback: animate});
     $("#cvs").data("fighter", cvs);
-    
+
     var abobo = {
         currentState : IDLE,
         position: 500,
@@ -257,11 +257,11 @@ $(function(){
 		var cvs = $("#cvs");
         var cvsF = cvs.data("fighter");
         var cvsLeft = cvs.position().left;
-        
+
         var abobo = $("#abobo");
         var aboboF = abobo.data("fighter");
         var aboboLeft = abobo.position().left;
-        
+
 		//hit?
 		if(cvsLeft+cvsF.animations[cvsF.currentState].width - 2 > aboboLeft){
 			if((cvsF.currentState == KICK || cvsF.currentState == PUNCH) && aboboF.currentState != BEATEN){
@@ -279,7 +279,7 @@ $(function(){
 				cvsF.currentState = BEATEN;
 			}
 		}
-		
+
 		//Move
         if(cvsF.currentState == WALK_FORWARD){
         	if((cvsLeft+cvsF.animations[cvsF.currentState].width+2) < aboboLeft){
@@ -288,7 +288,7 @@ $(function(){
         } else if ((cvsLeft > 50) && (cvsF.currentState == WALK_BACKWARD)){
             cvs.x(cvsLeft-2)
         }
-        
+
         if(aboboF.currentState == WALK_FORWARD){
             if((cvsLeft+cvsF.animations[cvsF.currentState].width+2) < aboboLeft){
             	abobo.x(aboboLeft - 2);
@@ -296,24 +296,24 @@ $(function(){
         } else if ((aboboLeft < 650) && (aboboF.currentState == WALK_BACKWARD)){
             abobo.x(aboboLeft + 2);
         }
-        
+
         var al = abobo.position().left - aboboF.animations[aboboF.currentState].deltaX;
         var cl = cvs.position().left - cvsF.animations[cvsF.currentState].deltaX;
-        
+
         var centerPos = (al - cl)/2 + cl;
         scrollStage(-(centerPos-400)*0.5);
-        
+
 		return false;
 	}, 30);
-	
-	
-	
-	
+
+
+
+
 	//start loading!
 	$.loadCallback(function(percent){
 		$("#loadingBar").width(600*percent);
 	});
-	
+
 	//initialize the start button
 	$.playground().startGame(function(){
 		$("#welcomMessage").fadeOut(2000, function(){$(this).remove()});

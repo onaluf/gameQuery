@@ -1,4 +1,4 @@
-/*
+/**
  * gameQuery.ext
  *
  * Copyright (c) 2010 Rob Britton
@@ -6,7 +6,8 @@
  */
 $ = $.extend($, {gameQuery: {}});
 
-/* QuadTree
+/**
+ * QuadTree
  * A space-partitioning tree useful for efficient collision detection.
  */
 $.gameQuery.QuadTree = function (width, height){
@@ -157,8 +158,9 @@ $.gameQuery.getTimeElapsed = function (){
   return gap.getMilliseconds();
 }
 
-/* View classes for handling scrolling backgrounds
- * 
+/**
+ * View classes for handling scrolling backgrounds
+ *
  * @param viewport The jQuery element where the view is displayed
  * @param background The jQuery element to be scrolled around in the viewport
  */
