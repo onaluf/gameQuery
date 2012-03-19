@@ -266,3 +266,8 @@ div.overlay a.close {
 div.overlay a.close:hover {
     text-decoration: none;
 }
+
+#helpOverlay a {
+	color: #000;
+	font-weight: bold;
+}
