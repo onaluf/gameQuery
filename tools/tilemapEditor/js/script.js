@@ -266,7 +266,7 @@ $(function(){
 				reverseAnimationMap[tilemap.animations[i].name] = i+1;
 				var animation = tilemap.animations[i];
 				
-				exportText += "var animations["+i+"] =  new $.gameQuery.Animation({\n";
+				exportText += "animations["+i+"] =  new $.gameQuery.Animation({\n";
 				exportText += "    imageURL:      '"+animation.url+"',\n";
 				exportText += "    type:          $.gameQuery."+animation.type+",\n";
 				exportText += "    numberOfFrame: "+animation.nbframes+",\n";
