@@ -1,6 +1,9 @@
 <html>
 <head>
 	<title>Tiles Map Editor</title>
+	
+	<link rel="shortcut icon" href="favicon.ico" />
+ 
 	<link rel="stylesheet" type="text/css" href="css/reset.css">
 	<link rel="stylesheet" type="text/css" href="css/custom.css">
 	<script src="js/jquery-1.7.1.js" type="text/javascript"></script>
@@ -12,7 +15,7 @@
 <body>
 	<div id="overlay">
         <div class="overlay" id="newOverlay">
-            <div class="header">
+            <div class="header lobster">
                 Create a new Tilemap
             </div>
             <div class="content">
@@ -44,8 +47,76 @@
                 </form>
             </div>
         </div>
+        <div class="overlay" id="exportOverlay">
+            <div class="header lobster">
+                Generated Code
+            </div>
+            <div class="content">
+                <form id="exportForm">
+                	<textarea id="exportArea" style="font-family: monospace; height: 400px; width: 800px"></textarea>
+                </form>
+                <button class="right" id="addAnimationCancel" name="cancel" >Ok</button>
+            </div>
+        </div>
+        <div class="overlay" id="addAnimationOverlay">
+            <div class="header lobster">
+                Add new animation
+            </div>
+            <div class="content">
+                <form id="addSingleAnimationForm">
+                    <table>
+                        <tr>
+                            <td><label>name</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_name"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>URL</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_url"/></td>
+                        </tr>
+                        <tr>
+                            <td><label># frame</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_nbframes"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>rate (in ms)</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_rate"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>X offset</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_offsetx"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>Y offset</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_offsety"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>delta</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_delta"/></td>
+                        </tr>
+                        <tr class="multianimation">
+                            <td><label>number of animations</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_nbanimations"/></td>
+                        </tr>
+                        <tr class="multianimation">
+                            <td><label>distance</label></td>
+                            <td colspan="3"><input size="31" id="addAnimationForm_input_distance"/></td>
+                        </tr>
+                        <tr>
+                            <td><label>Type</label></td>
+                            <td colspan="3"><select name="decision" id="addAnimationForm_input_type">
+                                <option selected>ANIMATION_VERTICAL</option>
+                                <option>ANIMATION_HORIZONTAL</option>
+                            </select></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"><button id="addAnimationOK" name="ok">create</button><button class="right" id="addAnimationCancel" name="cancel">cancel</button></td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
         <div class="overlay" id="helpOverlay" style="width: 200px;">
-	        <div class="header">
+	        <div class="header lobster">
 	            Help
 	        </div>
 	        <div class="content">
@@ -65,9 +136,10 @@
     </div>
 	<div id="toolbarTile">
 		<span>
-			<span style="font-family: 'Lobster'">Tiles Map Editor</span> &gt;&gt;
+			<span class="lobster">Tiles Map Editor</span> &gt;&gt;
 			<button id="newButton">new</button>
 			<button id="saveButton" class="disabled">save</button>
+			<button id="gridButton" class="disabled" style="width: 100px">grid on/off</button>
             <button id="helpButton" class="right">?</button>
 		</span>
 	</div>
@@ -78,7 +150,7 @@
 	
 	<div id="toolbarAnimation">
 		Animations >>
-		<button id="newAnimationButton" class="disabled">add</button>
+		<button id="addAnimationButton" class="disabled">add</button>
 	</div>
 	<div id="animations"></div>
 </body>
