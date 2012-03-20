@@ -893,6 +893,7 @@
 		 */
         pauseAnimation: function() {
 			this[0].gameQuery.playing = false;
+			return this;
         },
 
 		/**
@@ -900,6 +901,7 @@
 		 */
 		resumeAnimation: function() {
             this[0].gameQuery.playing = true;
+            return this;
         },
 
         /**
