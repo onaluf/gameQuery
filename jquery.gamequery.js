@@ -659,7 +659,9 @@
                 overflow: 	"visible",
                 geometry:   $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:      0,
-                factor:     1
+                factor:     1,
+                factorh:    1,
+                factorv:    1
             }, options);
 
             var newGroupElement = "<div id='"+group+"' class='group' style='position: absolute; display: block; overflow: "+options.overflow+"; top: "+options.posy+"px; left: "+options.posx+"px; height: "+options.height+"px; width: "+options.width+"px;' />";
@@ -764,7 +766,9 @@
                 posy:			0,
                 posz:			0,
                 posOffsetX: 	0,
-                posOffsetY: 	0
+                posOffsetY: 	0,
+                factorh:        1,
+                factorv:        1
             }, options);
 
             var tileSet = $("<div class='tileSet' style='position: absolute; display: block; overflow: hidden;' />");
