@@ -1,6 +1,6 @@
 var PLAYGROUND_WIDTH = 600 ;
 var PLAYGROUND_HEIGHT = 300;
-var NUMBER_OF_REDS = 500;
+var NUMBER_OF_REDS = 50;
 var bluePosX = 285;
 var bluePosY = 135;
 	
