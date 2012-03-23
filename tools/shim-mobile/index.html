@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>gameQuery shim for mobile game</title>
+		
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link href="icon.png" rel="apple-touch-icon" /> 
+        
+		<script language="JavaScript" type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
+		<script language="JavaScript" type="text/javascript" src="../../jquery.gamequery.js"></script>
+		<style>
+			html, body {
+				margin: 0;
+				padding: 0;
+			}
+			
+			/* CSS for the touchscreen controlers*/
+			#control {
+				display: none;
+				
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 480px;
+				height: 320px;
+			}
+			#stick {
+				position: absolute;
+				bottom: 30px;
+				left: 30px;
+				
+				background: url(control.gif);
+				width: 79px; 
+				height: 79px;
+			}
+			#b1 {
+				position: absolute;
+				bottom: 30px;
+				right: 100px;
+				
+				background: url(control.gif) -79px 0px;
+				width: 41px; 
+				height: 41px;
+			}
+			#b2 {
+				position: absolute;
+				bottom: 30px;
+				right: 20px;
+				
+				background: url(control.gif) -79px -41px;
+				width: 41px;
+				height: 41px;
+			}
+		</style>
+		<script>
+			$(function(){
+				// Small adjustemet for iPhone:
+				document.ontouchmove = function(e) {e.preventDefault()}; // disable scrolling
+				setTimeout(function() { window.scrollTo(0, 1) }, 100); // hide the address bar;
+				
+				// sets the div to use to display the game and its dimension
+				$("#playground").playground({width: 480, height: 320});
+				
+				// configure the loading bar
+				$.loadCallback(function(percent){
+					$("#loadBar").width(400*percent);
+					$("#loadtext").html(""+percent+"%")
+				});
+				
+				// register the start button and remove the splash screen once the game is ready to starts
+				$("#start").click(function(){
+					$.playground().startGame(function(){
+						 $("#splash").remove(); // remove the splash screen
+					 	$("#control").fadeTo('fast',50).show(); // show the control (transparent 50%)
+					});
+				});
+				
+				// Virtual joypad for the game
+				var controlStick = {
+					touching: false,
+					startX: undefined,
+					startY: undefined,
+					diffX: undefined,
+					diffY: undefined
+				};
+			    $("#stick").bind("touchstart", function(event){
+			        var touches = event.originalEvent.touches
+			        for(var i=0; i < touches.length; i++){
+			            if(touches[i].target==this){
+			                controlStick.startX = touches[i].screenX;
+			                controlStick.startY = touches[i].screenY;
+			            }
+			        }
+			        return false;
+			    });
+			    $("#stick").bind("touchmove", function(event){
+			    	controlStick.touching = true;
+			    	
+			        var touches = event.originalEvent.touches
+			        for(var i=0; i < touches.length; i++){
+			            if(touches[i].target==this){
+			            	controlStick.diffX = controlStick.startX-touches[i].screenX;
+			            	controlStick.diffY = controlStick.startY-touches[i].screenY;
+			            }
+			        }
+			        return false;
+			    });
+			    $("#stick").bind("touchend", function(event){
+			        controlStick.touching = false;
+			        return false;
+			    });
+			    $.playground().registerCallback(function(){
+			    	// Here the control stick can only have four direction, no diagonals
+			    	if(controlStick.touching) {
+				    	if(Math.abs(controlStick.diffX) < Math.abs(controlStick.diffY)){
+		                	if(controlStick.diffY < 0){
+		                		//this is down!
+		                	} else {
+		                		//this is up!
+		                	}
+		                } else {
+		                	if(controlStick.diffX > 0){
+		                		//this is left!
+		                	} else {
+		                		//this is right!
+		                	}
+		                }
+	                }
+			    }, 30);
+			    
+			    $("#b1").bind("touchstart", function(){
+			        // first button pressed
+			        return false;
+			    });
+			    $("#b2").bind("touchstart", function(){
+			        // first button pressed
+			        return false;
+			    });
+	
+			});
+		</script>
+	</head>
+	<body>
+		<div id="playground">
+			<div id ="splash">
+				<a id="start" style="font-size: 24px; position: absolute;top: 100px; left: 100px;">Start</a>
+				<div id="loadbar" style="background: 000; height: 32px; overflow: visible;"><span id="loadtext" style="color: red"></span></div>
+			</div>
+		</div>
+		<div id="control">
+			<div id="stick"></div>
+			<div id="b1"></div>
+			<div id="b2"></div>
+		</div>
+	</body>
+</html>
