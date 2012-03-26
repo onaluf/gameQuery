@@ -143,7 +143,7 @@ $(function(){
                 $this.toggleClass("muteButton");
                 $this.toggleClass("unmuteButton");
                 if($this.data("muted")){
-                    $("#blue").muteSound(false);
+                    $.muteSound(false);
                     $this.data("muted", false);
                 } else {
                     $.muteSound(true);

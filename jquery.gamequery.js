@@ -556,7 +556,7 @@
 
     //Mute (or unmute) all the sounds.
     muteSound: function(muted){
-        for (var i = $.gameQuery.resourceManager.sounds-1 ; i >= 0; i --) {
+        for (var i = $.gameQuery.resourceManager.sounds.length-1 ; i >= 0; i --) {
             $.gameQuery.resourceManager.sounds[i].muted(muted);
         }
     },
