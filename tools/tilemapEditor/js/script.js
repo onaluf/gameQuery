@@ -127,7 +127,6 @@ var animations = (function() {
         			break;
         		case MULTIPLE:
         			tilemap.multiple = true;
-        			tilemap.animations.push(animation);
         			for (var i  = 0; i < animation.nbanimations; i++){
         				fragment.css({left: 8+120*(counter-1), top: 5});
         				
