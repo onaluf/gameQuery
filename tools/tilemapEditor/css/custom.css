@@ -267,7 +267,28 @@ div.overlay a.close:hover {
     text-decoration: none;
 }
 
+input.failedValidation {
+	color: #800;
+	background: #fdd;
+}
+
 #helpOverlay a {
 	color: #000;
 	font-weight: bold;
+}
+
+#addAnimationImage {
+	position: relative;
+	border: thin dashed #666;
+	overflow: auto;
+}
+
+#addAnimationSelectionBox {
+	position: absolute;
+	border: solid thin #FF0;
+}
+
+.selelectionBoxes {
+	position: absolute;
+	border: dotted thin #FF0;
 }

@@ -22,16 +22,16 @@
                 <form id="newForm">
                     <table>
                         <tr>
-                            <td><label>number of tiles</label></td>
-                            <td><input size="6" placeholder="width" id="newForm_input_map_width"/></td>
+                             <td><label>number of tiles</label></td>
+                            <td><input class="intValue"  size="6" placeholder="width" id="newForm_input_map_width"/></td>
                             <td>x</td>
-                            <td><input size="6" placeholder="height" id="newForm_input_map_height"/></td>
+                            <td><input class="intValue" size="6" placeholder="height" id="newForm_input_map_height"/></td>
                         </tr>
                         <tr>
                             <td><label>size of a tile</label></td>
-                            <td><input size="6" placeholder="width" id="newForm_input_tile_width"/></td>
+                            <td><input class="intValue" size="6" placeholder="width" id="newForm_input_tile_width"/></td>
                             <td>x</td>
-                            <td><input size="6" placeholder="height" id="newForm_input_tile_height"/></td>
+                            <td><input class="intValue" size="6" placeholder="height" id="newForm_input_tile_height"/></td>
                         </tr>
                         <tr>
                             <td><label>type of animations</label></td>
@@ -58,12 +58,12 @@
                 <button class="right" id="addAnimationCancel" name="cancel" >Ok</button>
             </div>
         </div>
-        <div class="overlay" id="addAnimationOverlay">
+        <div class="overlay" id="addAnimationOverlay" style="width: 810px">
             <div class="header lobster">
                 Add new animation
             </div>
             <div class="content">
-                <form id="addSingleAnimationForm">
+                <form id="addAnimationForm" style="width: 280px; float: left;">
                     <table>
                         <tr>
                             <td><label>name</label></td>
@@ -75,31 +75,31 @@
                         </tr>
                         <tr>
                             <td><label># frame</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_nbframes"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_nbframes"/></td>
                         </tr>
                         <tr>
                             <td><label>rate (in ms)</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_rate"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_rate"/></td>
                         </tr>
                         <tr>
                             <td><label>X offset</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_offsetx"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_offsetx"/></td>
                         </tr>
                         <tr>
                             <td><label>Y offset</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_offsety"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_offsety"/></td>
                         </tr>
                         <tr>
                             <td><label>delta</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_delta"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_delta"/></td>
                         </tr>
                         <tr class="multianimation">
                             <td><label>number of animations</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_nbanimations"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_nbanimations"/></td>
                         </tr>
                         <tr class="multianimation">
                             <td><label>distance</label></td>
-                            <td colspan="3"><input size="31" id="addAnimationForm_input_distance"/></td>
+                            <td colspan="3"><input class="intValue" size="31" id="addAnimationForm_input_distance"/></td>
                         </tr>
                         <tr>
                             <td><label>Type</label></td>
@@ -108,11 +108,18 @@
                                 <option>ANIMATION_HORIZONTAL</option>
                             </select></td>
                         </tr>
-                        <tr>
-                            <td colspan="4"><button id="addAnimationOK" name="ok">create</button><button class="right" id="addAnimationCancel" name="cancel">cancel</button></td>
-                        </tr>
+                        <!--<tr>
+                            <td><strong>Preview:</strong></td>
+                        </tr>-->
                     </table>
                 </form>
+                <div id="addAnimationImage" style="width: 518px; height: 300px; float: left;">
+                	<div id="addAnimationSelectionBox"></div>
+                </div>
+                <!--<div id="addAnimationPreview" style="width: 800px; height: 100px; float: left;"></div>-->
+                <div id="addAnimationButtons" style="width: 800px;">
+                	<button id="addAnimationOK" name="ok">create</button><button class="right" id="addAnimationCancel" name="cancel">cancel</button>
+                </div>
             </div>
         </div>
         <div class="overlay" id="helpOverlay" style="width: 350px;">

@@ -15,6 +15,17 @@ var minMax = function (min, val , max){
     return Math.max(min, Math.min(val, max));
 }
 
+var toInt = function(value){
+	if (value === "" || value === undefined) {
+		throw "Not a number!"
+	}
+	var result = parseInt(value);
+	if(result === NaN){
+		throw "Not a number!"
+	}
+	return result;
+}
+	
 var generateBackground = function(animation) {
 	var background = "url('"+animation.url+"') "+animation.offsetx+" "+animation.offsety;
 	return background
@@ -55,7 +66,6 @@ var modalDialog = (function() {
                     return false;
                 });
             
-                
                 availableDialog.push(dialog);
             
                 dialog.delegate("button", "click", function(event){
@@ -176,7 +186,81 @@ $(function(){
 			$(".animation.selected").removeClass("selected");
 			$(this).toggleClass("selected");
 		}
+	}); 
+	
+	// Handle the validation of input containing int value
+	$(".intValue").keyup(function (event) {
+		var inputValue = $(this).val(); 
+		var failed = false;
+		if (inputValue != ""){
+			try{
+				var intValue = toInt(inputValue);
+				if(inputValue != (""+intValue)){
+					failed = true;
+				}
+			}
+			catch (event){
+				failed = true;	
+			}
+			
+			if(failed){
+				$(this).addClass("failedValidation");
+			} else {
+				$(this).removeClass("failedValidation");
+			}
+		} else {
+			$(this).removeClass("failedValidation");
+		}
 	});
+	
+	// Handle the interactive part of the 'add animation' dialog
+	var isAddAnimationOverlayVisible = function (){
+		var display = $("#addAnimationOverlay").css("display")
+		return display !== "none";
+	}
+	$("#addAnimationForm_input_url").change(function(event){
+		if(isAddAnimationOverlayVisible()){
+			var url = "url('"+$(this).val()+"')";
+			$("#addAnimationImage").css("background", url);
+			$("#addAnimationSelectionBox").css("width", tilemap.tileWidth);
+			$("#addAnimationSelectionBox").css("height", tilemap.tileHeight);
+		}
+	});
+	var updateSelectionBoxes = function(){
+		var offsetx, offsety, delta, frameNb, animationType;
+		try {
+			$(".selelectionBoxes").remove();
+			
+			offsetx = toInt($("#addAnimationForm_input_offsetx").val());
+			offsety = toInt($("#addAnimationForm_input_offsety").val());
+			
+			$("#addAnimationSelectionBox").css("left",offsetx);
+			$("#addAnimationSelectionBox").css("top",offsety);
+
+			delta = toInt($("#addAnimationForm_input_delta").val());
+			frameNb = toInt($("#addAnimationForm_input_nbframes").val());
+			animationType = $("#addAnimationForm_input_type").val();
+			
+			for(var i = 1; i < frameNb; i++) {
+				var left, top;
+				switch(animationType){
+		        	case "ANIMATION_VERTICAL" :
+		        		left = offsetx;
+		        		top  = offsety + (i)*delta;
+		        		break;
+		        	case "ANIMATION_HORIZONTAL":
+		        		left = offsetx + (i)*delta;
+		        		top  = offsety;
+		        		break;
+		        }
+				$("#addAnimationImage").append("<div class='selelectionBoxes' style='width: "+tilemap.tileWidth+"; height: "+tilemap.tileHeight+"; left: "+left+"; top: "+top+"'></div>");
+			}
+			
+		} catch (exception) {/* fail silently */};
+	};
+	$("#addAnimationForm_input_offsetx").keyup(updateSelectionBoxes);
+	$("#addAnimationForm_input_offsety").keyup(updateSelectionBoxes);
+	$("#addAnimationForm_input_delta, #addAnimationForm_input_nbframes, #addAnimationForm_input_type").change(updateSelectionBoxes);
 	
 	// Handle the click on a tile
 	$("#grid").delegate(".grid", "click", function(event){ 
@@ -195,7 +279,7 @@ $(function(){
 				$("#tiles").append(tile);
 			}
 		}
-	})
+	});
 	
 	// Handle the backspace key
 	$(window).keyup(function(event){ 
@@ -210,7 +294,7 @@ $(function(){
 			}
 			return false;
 		}
-	})
+	});
     
     // grid on/off button
     var gridVisible = true;
