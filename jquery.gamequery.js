@@ -1396,6 +1396,11 @@
         				}
         				gameQuery.posx = option.x;
         				this.css("left",""+(gameQuery.posx + gameQuery.posOffsetX)+"px");
+        				
+        				//update the sub tile maps (if any)
+        				this.find(".tileSet").each(function(){
+        					$(this).x(0, true);
+        				});
         				break;
 
         			case 'y':
@@ -1404,6 +1409,11 @@
         				}
 	        			gameQuery.posy = option.y;
 	        			this.css("top",""+(gameQuery.posy + gameQuery.posOffsetY)+"px");
+	        			
+	        			//update the sub tile maps (if any)
+        				this.find(".tileSet").each(function(){
+        					$(this).y(0, true);
+        				});
         				break;
 
         			case 'z':

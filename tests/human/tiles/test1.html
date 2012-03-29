@@ -62,8 +62,8 @@
                     .addTilemap("arrayFunction", tileFun, animations,     {width: 10, height: 10, sizex: 3, sizey: 3, posx: 120}).end()
                     .addTilemap("multiArrayPingpong", tileDef, multiAnimationPingpong, {width: 10, height: 10, sizex: 3, sizey: 3, posx: 160}).end()
 					.addTilemap("arrayArrayPingpong", tileDef, animationsPingpong,     {width: 10, height: 10, sizex: 3, sizey: 3, posx: 200}).end()
-					.addTilemap("outside",    tileDef, multiAnimation, {width: 10, height: 10, sizex: 3, sizey: 3, posx: -40});
-                $("#outside").x(240);
+					.addGroup("testGroup", {height: 30, width: 30, posx: -40}).addTilemap("outside",    tileDef, multiAnimation, {width: 10, height: 10, sizex: 3, sizey: 3, posx: 0});
+                $("#testGroup").x(240);
                 $.playground().startGame();
             });
         </script>
