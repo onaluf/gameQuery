@@ -61,14 +61,15 @@
                     .addTilemap("arrayArray",    tileDef, animations,     {width: 10, height: 10, sizex: 3, sizey: 3, posx: 80}).end()
                     .addTilemap("arrayFunction", tileFun, animations,     {width: 10, height: 10, sizex: 3, sizey: 3, posx: 120}).end()
                     .addTilemap("multiArrayPingpong", tileDef, multiAnimationPingpong, {width: 10, height: 10, sizex: 3, sizey: 3, posx: 160}).end()
-					.addTilemap("arrayArrayPingpong", tileDef, animationsPingpong,     {width: 10, height: 10, sizex: 3, sizey: 3, posx: 200});
-                
+					.addTilemap("arrayArrayPingpong", tileDef, animationsPingpong,     {width: 10, height: 10, sizex: 3, sizey: 3, posx: 200}).end()
+					.addGroup("testGroup", {height: 30, width: 30, posx: -40}).addTilemap("outside",    tileDef, multiAnimation, {width: 10, height: 10, sizex: 3, sizey: 3, posx: 0});
+                $("#testGroup").x(240);
                 $.playground().startGame();
             });
         </script>
     </head>
     <body>
-        <h2>The four first tiles should be the same and the last two should be out of phase:</h2>
+        <h2>The four first tiles should be the same and the fith and sixth should be out of phase and the last one like the first:</h2>
         <div id="playground" style="width: 350px; height: 50px; background: white"></div>
     </body>
 </html>

@@ -222,8 +222,8 @@ $(function(){
 		if(isAddAnimationOverlayVisible()){
 			var url = "url('"+$(this).val()+"')";
 			$("#addAnimationImage").css("background", url);
-			$("#addAnimationSelectionBox").css("width", tilemap.tileWidth);
-			$("#addAnimationSelectionBox").css("height", tilemap.tileHeight);
+			$("#addAnimationSelectionBox").css("width", tilemap.tileWidth - 6);
+			$("#addAnimationSelectionBox").css("height", tilemap.tileHeight - 6);
 		}
 	});
 	var updateSelectionBoxes = function(){
@@ -243,17 +243,24 @@ $(function(){
 			
 			for(var i = 1; i < frameNb; i++) {
 				var left, top;
+				var removedBorder = "";
 				switch(animationType){
 		        	case "ANIMATION_VERTICAL" :
 		        		left = offsetx;
 		        		top  = offsety + (i)*delta;
+		        		if(delta === tilemap.tileHeight) {
+		        			//removedBorder =  "; border-top: none";
+		        		}
 		        		break;
 		        	case "ANIMATION_HORIZONTAL":
 		        		left = offsetx + (i)*delta;
 		        		top  = offsety;
+		        		if(delta === tilemap.tileWidth) {
+		        			//removedBorder =  "; border-left: none";
+		        		}
 		        		break;
 		        }
-				$("#addAnimationImage").append("<div class='selelectionBoxes' style='width: "+tilemap.tileWidth+"; height: "+tilemap.tileHeight+"; left: "+left+"; top: "+top+"'></div>");
+				$("#addAnimationImage").append("<div class='selelectionBoxes' style='width: "+(tilemap.tileWidth - 6)+"; height: "+(tilemap.tileHeight - 6)+"; left: "+left+"; top: "+top+removedBorder+"'></div>");
 			}
 			
 		} catch (exception) {/* fail silently */};

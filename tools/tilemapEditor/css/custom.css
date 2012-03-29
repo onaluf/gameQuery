@@ -285,10 +285,10 @@ input.failedValidation {
 
 #addAnimationSelectionBox {
 	position: absolute;
-	border: solid thin #FF0;
+	border: 3px solid #FF0;
 }
 
 .selelectionBoxes {
 	position: absolute;
-	border: dotted thin #FF0;
+	border: 3px dotted #FF0;
 }
