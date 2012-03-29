@@ -372,22 +372,27 @@
             if(!gameQuery) return;
             if(gameQuery.tileSet === true){
                 //then we have a tilemap!
-                descriptor = $(descriptor);
                 // find the tilemap offset relative to the playground:
-                var playgroundOffset = $.gameQuery.playground.offset();
-                var tileSetOffset = descriptor.offset();
-                tileSetOffset = {top: tileSetOffset.top - playgroundOffset.top, left: tileSetOffset.left - playgroundOffset.left};
+                var tileSetOffset = {top: gameQuery.posy, left: gameQuery.posx};
+	            var parent = descriptor.parent();
+	            while(parent[0] !== $.gameQuery.playground[0]) {
+	            	if (parent[0].gameQuery !== undefined) {
+	            		tileSetOffset.left += parent[0].gameQuery.posx;
+	            		tileSetOffset.top += parent[0].gameQuery.posy;
+	            	}
+	            	parent = $(parent).parent();
+	            }
+	            
                 // test what kind of transformation we have and react accordingly:
                 // Update the descriptor
                 for(property in transformation){
                     switch(property){
                         case "x":
                             //Do we need to activate/deactivate the first/last column
-                            var left = parseFloat(transformation.left);
+                            var left = gameQuery.posx;
+                            
                             //Get the tileSet offset (relative to the playground)
-                            var playgroundOffset = $.gameQuery.playground.offset();
-                            var tileSetOffset = descriptor.parent().offset();
-                            tileSetOffset = {top: tileSetOffset.top - playgroundOffset.top, left: tileSetOffset.left + left - playgroundOffset.left};
+                            tileSetOffset.left += gameQuery.posx;
 
                             //activates the visible tiles
                             var firstColumn = Math.max(Math.min(Math.floor(-tileSetOffset.left/gameQuery.width), gameQuery.sizex),0);
@@ -420,11 +425,8 @@
                             break;
                         case "y":
                             //Do we need to activate/deactivate the first/last row
-                            var top = parseFloat(transformation.top);
                             //Get the tileSet offset (relative to the playground)
-                            var playgroundOffset = $.gameQuery.playground.offset();
-                            var tileSetOffset = descriptor.parent().offset();
-                            tileSetOffset = {top: tileSetOffset.top + top - playgroundOffset.top, left: tileSetOffset.left - playgroundOffset.left};
+                            tileSetOffset.top += gameQuery.posy;
 
                             //actvates the visible tiles
                             var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/gameQuery.height), gameQuery.sizey), 0);
@@ -778,7 +780,7 @@
             } else {
                 this.append(tileSet);
             }
-
+	
             if($.isArray(animationList)){
                 var frameTracker = [];
                 var idleCounter = [];
@@ -861,6 +863,7 @@
                                                        animation: animationList});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.setAnimation(tileDescription[i][j]-1);
+                                newTile.removeClass("sprite");
                                 newTile.removeClass("active");
                                 newTile.addClass("tileType_"+(tileDescription[i][j]-1));
                             }
@@ -869,9 +872,18 @@
             	}
             }
             //Get the tileSet offset (relative to the playground)
-            var playgroundOffset = $.gameQuery.playground.offset();
-            var tileSetOffset = tileSet.offset();
-            tileSetOffset = {top: tileSetOffset.top - playgroundOffset.top, left: tileSetOffset.left - playgroundOffset.left};
+            var tileSetOffset = {top: options.posy, left: options.posx};
+            var parent = this;
+            while(parent[0] !== $.gameQuery.playground[0]) {
+            	if (parent[0].gameQuery !== undefined) {
+            		tileSetOffset.left += parent[0].gameQuery.posx;
+            		tileSetOffset.top += parent[0].gameQuery.posy;
+            	}
+            	parent = $(parent).parent();
+            }
+            //var playgroundOffset = $.gameQuery.playground.offset();
+            //var tileSetOffset = tileSet.offset();
+            //tileSetOffset = {top: tileSetOffset.top - playgroundOffset.top, left: tileSetOffset.left - playgroundOffset.left};
 
             //activates the visible tiles
             var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/options.height), options.sizey), 0);
@@ -1403,7 +1415,7 @@
         				break;
         		}
         	}
-        	$.gameQuery.update(gameQuery, option);
+        	$.gameQuery.update(this, option);
         	return this;
         },
 
@@ -1435,7 +1447,7 @@
         				break;
         		}
         	}
-        	$.gameQuery.update(gameQuery, option);
+        	$.gameQuery.update(this, option);
         	return this;
         }
 	});
