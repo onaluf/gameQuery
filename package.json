@@ -1,6 +1,6 @@
 {
     "name": "gameQuery",
-    "version": "0.6_pre",
+    "version": "0.6",
     "title": "gameQuery - javascript game development made easy",
     "author": {
         "name": "Selim Arsever",
@@ -22,9 +22,9 @@
         "animation",
         "collision"
     ],
-    "homepage": "http://gamequery.onaluf.org",
-    "docs": "http://gamequery.onaluf.org/documentation.php",
-    "demo": "http://gamequery.onaluf.org/demos.php",
+    "homepage": "http://gamequeryjs.com",
+    "docs": "http://gamequeryjs.com/documentation",
+    "demo": "http://gamequeryjs.com/demo",
     "files": [
         "jquery.gamequery.js"
     ]
