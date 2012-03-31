@@ -932,11 +932,12 @@
                 if(gameQuery.animation.type & $.gameQuery.ANIMATION_MULTI){
                     var distance = gameQuery.animation.distance * animation;
                     gameQuery.multi = distance;
+                    gameQuery.frameIncrement = 1;
+                    gameQuery.currentFrame = 0;
+                    
                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
-                       gameQuery.currentFrame = 0;
                         this.css("background-position",""+(-distance-gameQuery.animation.offsetx)+"px "+(-gameQuery.animation.offsety)+"px");
                     } else if(gameQuery.animation.type & $.gameQuery.ANIMATION_HORIZONTAL) {
-                        gameQuery.currentFrame = 0;
                         this.css("background-position",""+(-gameQuery.animation.offsetx)+"px "+(-distance-gameQuery.animation.offsety)+"px");
                     }
                 }
@@ -944,6 +945,7 @@
                 if(animation){
                     gameQuery.animation = animation;
                     gameQuery.currentFrame = 0;
+                    gameQuery.frameIncrement = 1;
 
 					if (animation.imageURL !== '') {this.css("backgroundImage", "url('"+animation.imageURL+"')");}
 					this.css({"background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
