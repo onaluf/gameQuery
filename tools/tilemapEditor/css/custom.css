@@ -6,10 +6,10 @@ body {
 	color: white;
 }
 input {
-    font-family: 'Molengo', arial, serif; 
+    font-family: arial, serif; 
 }
 select {
-    font-family: 'Molengo', arial, serif; 
+    font-family: arial, serif; 
 }
 
 a{
@@ -57,6 +57,61 @@ button.disabled {
 	color: #aaa;
 	text-shadow: -1px -1px 0px #444;
 	cursor: default;
+}
+
+button.gridButton {
+	position: absolute;
+	padding: 0;
+	
+	background: none;
+	border: thin solid #FFF;
+	color: #FFF;
+	opacity: 0.35;
+	
+	font-size: 18px;
+	font-weight: bold; 
+	
+	width: 21px;
+	height: 21px;
+	
+	z-index: 50;
+}
+button.gridButton:hover {
+	opacity: 1;
+}
+button#minusH {
+	-moz-border-radius-topleft: 10px;
+ 	-webkit-border-top-left-radius: 10px;
+	border-top-left-radius: 10px;
+	-moz-border-radius-bottomleft: 10px;
+ 	-webkit-border-bottom-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+}
+
+button#plusH {
+	-moz-border-radius-topright: 10px;
+ 	-webkit-border-top-right-radius: 10px;
+	border-top-right-radius: 10px;
+	-moz-border-radius-bottomright: 10px;
+ 	-webkit-border-bottom-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+button#minusV {
+	-moz-border-radius-topleft: 10px;
+ 	-webkit-border-top-left-radius: 10px;
+	border-top-left-radius: 10px;
+	-moz-border-radius-topright: 10px;
+ 	-webkit-border-top-right-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+button#plusV {
+	-moz-border-radius-bottomleft: 10px;
+ 	-webkit-border-bottom-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+	-moz-border-radius-bottomright: 10px;
+ 	-webkit-border-bottom-right-radius: 10px;
+	border-bottom-right-radius: 10px;
 }
 
 #toolbarTile{
