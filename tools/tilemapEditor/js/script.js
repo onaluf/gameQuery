@@ -111,8 +111,6 @@ var animations = (function() {
     	},
         // add a new Animation
         add: function(/* should be some arguments there*/){
-        	// is there a validation error, then we don't accept the form
-        	if($("#addAnimationForm").find(".failedValidation").size() > 0) return false;
         	
         	var animation = {
 				name:         $("#addAnimationForm_input_name").val(),
@@ -131,7 +129,7 @@ var animations = (function() {
         	
         	switch (type){
         		case SINGLE:
-        			fragment.css({left: 8+120*(tilemap.animations.length), top: 5});
+        			fragment.css({left: 8+120*tilemap.animations.length, top: 5});
 
         			$("#animations").append(fragment.clone().attr("id","animation_"+counter));
         			var doma = $("#animation_"+counter);
@@ -146,7 +144,7 @@ var animations = (function() {
         		case MULTIPLE:
         			tilemap.multiple = true;
         			for (var i  = 0; i < animation.nbanimations; i++){
-        				fragment.css({left: 8+120*(tilemap.animations.length + i), top: 5});
+        				fragment.css({left: 8+120*i, top: 5});
         				
         				var currentAnimation = jQuery.extend({}, animation);
 
@@ -204,22 +202,19 @@ $(function(){
 	var validateIntInput = function (event) {
 		var inputValue = $(this).val(); 
 		var failed = false;
-		if (inputValue != ""){
-			try{
-				var intValue = toInt(inputValue);
-				if(inputValue != (""+intValue)){
-					failed = true;
-				}
+		
+		try{
+			var intValue = toInt(inputValue);
+			if(inputValue != (""+intValue)){
+				failed = true;
 			}
-			catch (event){
-				failed = true;	
-			}
-			
-			if(failed){
-				$(this).addClass("failedValidation");
-			} else {
-				$(this).removeClass("failedValidation");
-			}
+		}
+		catch (event){
+			failed = true;	
+		}
+		
+		if(failed){
+			$(this).addClass("failedValidation");
 		} else {
 			$(this).removeClass("failedValidation");
 		}
@@ -386,23 +381,31 @@ $(function(){
 	
 	// Handle the delete animation button
 	$("#animations").delegate("a.close", "click", function(event){
-		var animationDom = $(this).parent();
-		var animation = animationDom.data(ANIMATION_NS);
-		// remove tile to which this animation was applied
-		
-		// remove the animation
-		$(".tile").each(function(){
-			if($(this).data(TILE_NS) === animation.name){
-				$(this).remove();
+		if(tilemap.multiple){
+			// if we have multiple animation the delete button just remove all animations and tiles
+			$(".tile").remove();
+			tilemap.animations = [];
+			$(".animation").remove();
+			$("#addAnimationButton").removeClass("disabled");
+		} else {
+			var animationDom = $(this).parent();
+			var animation = animationDom.data(ANIMATION_NS);
+			// remove tile to which this animation was applied
+			
+			// remove the animation
+			$(".tile").each(function(){
+				if($(this).data(TILE_NS) === animation.name){
+					$(this).remove();
+				}
+			});
+			var animationIndex = tilemap.animations.indexOf(animation);
+			tilemap.animations.splice(animationIndex, 1);
+			animationDom.remove();
+			
+			// shift all the animations right to this one
+			for (var i = animationIndex + 1 ; i < tilemap.animations.length + 1; i++){
+				$("#animation_"+(i+1)).css("left",8+120*(i-1));
 			}
-		});
-		var animationIndex = tilemap.animations.indexOf(animation);
-		tilemap.animations.splice(animationIndex, 1);
-		animationDom.remove();
-		
-		// shift all the animations right to this one
-		for (var i = animationIndex + 1 ; i < tilemap.animations.length + 1; i++){
-			$("#animation_"+(i+1)).css("left",8+120*(i-1));
 		}
 	});
 	
@@ -444,9 +447,16 @@ $(function(){
     
     // Add animation dialog
     modalDialog.register("addAnimationOverlay", "addAnimationButton", function(){
-    	$(this).find(".intValue").each(validateIntInput);
+    	// is there a validation error, then we don't accept the form
+    	$("#addAnimationForm").find(".intValue").each(validateIntInput);
     	$("#addAnimationForm_input_name").each(validateUniqueName);
-        return animations.add();
+    	
+    	if(tilemap.multiple) {
+	    	if($("#addAnimationForm").find(".failedValidation").size() > 0) return false;
+    	} else {
+    		if($("#addAnimationForm").find("tr:not(.multianimation) .failedValidation").size() > 0) return false;
+    	}
+    	return animations.add();
 	});
 	
 	// Add the export dialog
@@ -456,7 +466,7 @@ $(function(){
 		var reverseAnimationMap = []; //contains an index number for each animation name
 	
 		// generate the animation(s)
-		if(tilemap.multiple){
+		if(tilemap.multiple && tilemap.animations.length > 0){
 			var animation = tilemap.animations[0]; // we take the first animation as example, they are all the same anyway
 			exportText += "var animations =  new $.gameQuery.Animation({\n";
 			exportText += "    imageURL:      '"+animation.url+"',\n";
@@ -535,7 +545,7 @@ $(function(){
     // New Tilemap Overlay
     modalDialog.register("newOverlay", "newButton", function(){
     	// is there a validation error, then we don't accept the form
-    	$(this).find(".intValue").each(validateIntInput);
+    	$("#newForm").find(".intValue").each(validateIntInput);
         if($("#newForm").find(".failedValidation").size() > 0) return false;
     	
     	var tileWidth  = parseInt($("#newForm_input_tile_width").val()); 
