@@ -1,16 +1,9 @@
+/* constants */
 var ANIMATION_NS = "animation";
 var TILE_NS = "tile";
 var GRID_NS = "grid";
 
-var tilemap = {
-	width: undefined,
-	height: undefined,
-	tileWidth: undefined,
-	tileHeight: undefined,
-	animations: [],
-	tiles: [] 
-}
-
+/* utility functions */
 var minMax = function (min, val , max){
     return Math.max(min, Math.min(val, max));
 }
@@ -29,6 +22,15 @@ var toInt = function(value){
 var generateBackground = function(animation) {
 	var background = "url('"+animation.url+"') "+animation.offsetx+" "+animation.offsety;
 	return background
+}
+
+/* global objects */
+var tilemap = {
+	width: undefined,
+	height: undefined,
+	tileWidth: undefined,
+	tileHeight: undefined,
+	animations: []
 }
 
 var modalDialog = (function() {
@@ -69,17 +71,20 @@ var modalDialog = (function() {
                 availableDialog.push(dialog);
             
                 dialog.delegate("button", "click", function(event){
+                	var success = false;
                     //The event handler!
                     switch(this.name) {
                         case "ok":
-                            okHandler.call(this);
+                            success = (okHandler !== undefined) ? okHandler.call(this) : true;
                             break;
                         case "cancel":
-                            // do nothing
+                            success = true;
                             break;
                     }
-                    $("#overlay").hide();
-                    dialog.hide();
+                    if (success){
+                    	$("#overlay").hide();
+                    	dialog.hide();
+                    }
                     return false;
                 });
             
@@ -106,6 +111,9 @@ var animations = (function() {
     	},
         // add a new Animation
         add: function(/* should be some arguments there*/){
+        	// is there a validation error, then we don't accept the form
+        	if($("#addAnimationForm").find(".failedValidation").size() > 0) return false;
+        	
         	var animation = {
 				name:         $("#addAnimationForm_input_name").val(),
 	        	url:          $("#addAnimationForm_input_url").val(),
@@ -123,8 +131,8 @@ var animations = (function() {
         	
         	switch (type){
         		case SINGLE:
-        			fragment.css({left: 8+120*(counter-1), top: 5});
-        			
+        			fragment.css({left: 8+120*(tilemap.animations.length), top: 5});
+
         			$("#animations").append(fragment.clone().attr("id","animation_"+counter));
         			var doma = $("#animation_"+counter);
 		        	$("#animation_"+counter+" .name").html(animation.name);
@@ -138,9 +146,10 @@ var animations = (function() {
         		case MULTIPLE:
         			tilemap.multiple = true;
         			for (var i  = 0; i < animation.nbanimations; i++){
-        				fragment.css({left: 8+120*(counter-1), top: 5});
+        				fragment.css({left: 8+120*(tilemap.animations.length + i), top: 5});
         				
         				var currentAnimation = jQuery.extend({}, animation);
+
         				currentAnimation.name = animation.name  + " " + counter;
         				if(animation.type === 'ANIMATION_VERTICAL'){
         					currentAnimation.offsetx = animation.offsetx + (animation.distance * i);
@@ -163,12 +172,13 @@ var animations = (function() {
 
         			break;
         	}
-        } 
+        	return true;
+        }
     }
 })();
 
 $(function(){
-	/* resize */
+	// Resize the elements of the page
 	var resize = function() {
 		//resize elements
 		$("#tilemap").height(
@@ -178,7 +188,9 @@ $(function(){
 			-$("#animations").height()-20);
 	};
 	resize();
+	$(window).resize(resize);
 
+	// Allow the selection of one and only one animation as well as it's deselection 
 	$("#animations").delegate(".animation", "click", function(event){ 
 		if($(this)[0] === $(".animation.selected")[0]) {
 			$(".animation.selected").removeClass("selected");
@@ -189,7 +201,7 @@ $(function(){
 	}); 
 	
 	// Handle the validation of input containing int value
-	$(".intValue").keyup(function (event) {
+	var validateIntInput = function (event) {
 		var inputValue = $(this).val(); 
 		var failed = false;
 		if (inputValue != ""){
@@ -211,7 +223,28 @@ $(function(){
 		} else {
 			$(this).removeClass("failedValidation");
 		}
-	});
+	};
+	$(".intValue").keyup(validateIntInput);
+	
+	// validate the name field of the add animation dialog
+	var validateUniqueName = function(){
+		// check that the name don't already exist
+		var unique = true;
+		for (var i = 0; i < tilemap.animations.length; i++){
+			if(tilemap.animations[i].name === $(this).val()){
+				unique = false;
+				break;
+			}
+		}
+		
+		if(unique){
+			$(this).removeClass("failedValidation");
+		} else {
+			$(this).addClass("failedValidation");
+		}
+		return true;
+	};
+	$("#addAnimationForm_input_name").keyup(validateUniqueName); 
 	
 	// Handle the interactive part of the 'add animation' dialog
 	var isAddAnimationOverlayVisible = function (){
@@ -248,22 +281,17 @@ $(function(){
 		        	case "ANIMATION_VERTICAL" :
 		        		left = offsetx;
 		        		top  = offsety + (i)*delta;
-		        		if(delta === tilemap.tileHeight) {
-		        			//removedBorder =  "; border-top: none";
-		        		}
 		        		break;
 		        	case "ANIMATION_HORIZONTAL":
 		        		left = offsetx + (i)*delta;
 		        		top  = offsety;
-		        		if(delta === tilemap.tileWidth) {
-		        			//removedBorder =  "; border-left: none";
-		        		}
 		        		break;
 		        }
 				$("#addAnimationImage").append("<div class='selelectionBoxes' style='width: "+(tilemap.tileWidth - 6)+"; height: "+(tilemap.tileHeight - 6)+"; left: "+left+"; top: "+top+removedBorder+"'></div>");
 			}
 			
 		} catch (exception) {/* fail silently */};
+		return true;
 	};
 	$("#addAnimationForm_input_offsetx").keyup(updateSelectionBoxes);
 	$("#addAnimationForm_input_offsety").keyup(updateSelectionBoxes);
@@ -277,14 +305,104 @@ $(function(){
 		var animation = $(".animation.selected").data(ANIMATION_NS);
 		if(animation) {
 			var coordinate = $(this).data(GRID_NS);
-			var tile = $("#tile_"+coordinate.x+"_"+coordinate.y);
+			var tile = $(".tile.col_"+coordinate.x+".row_"+coordinate.y);
 			if(tile.size() > 0){
 				tile.css("background", generateBackground(animation));
 				tile.data(TILE_NS, animation.name);
 			} else {
-				tile = $("<div class='tile' id='tile_"+coordinate.x+"_"+coordinate.y+"'/>").css({width: tilemap.tileWidth, height: tilemap.tileHeight,left: (tilemap.tileWidth)*coordinate.x, top: (tilemap.tileHeight)*coordinate.y, background: generateBackground(animation)}).data(TILE_NS, animation.name);
+				tile = $("<div class='tile' />")
+					.css({
+						width: tilemap.tileWidth, 
+						height: tilemap.tileHeight, 
+						left: (tilemap.tileWidth)*coordinate.x, 
+						top: (tilemap.tileHeight)*coordinate.y, 
+						background: generateBackground(animation)})
+					.data(TILE_NS, animation.name)
+					.addClass("row_"+coordinate.y+" col_"+coordinate.x);
 				$("#tiles").append(tile);
 			}
+		}
+	});
+	
+	// Handle the add/remove row/column buttons
+	$("#grid").delegate("#plusH", "click", function(event){
+		// update the global object
+		tilemap.width ++;
+		
+		// add a collumn of grid element
+		var fragment = $("<div class='grid'/>").css({width: tilemap.tileWidth-1, height: tilemap.tileHeight-1});
+		for(var i=0; i < tilemap.height; i++) {
+            	var grid = fragment.clone().css({left: tilemap.tileWidth*(tilemap.width - 1), top: (tilemap.tileHeight)*i}).addClass("row_"+i+" col_"+(tilemap.width - 1));
+                $("#grid").append(grid);
+            	grid.data(GRID_NS,{x:tilemap.width - 1, y: i});
+        }
+        
+		// move the +/- buttons
+		$("#minusH").css({left: tilemap.tileWidth*tilemap.width-20});
+        $("#plusH").css({left: tilemap.tileWidth*tilemap.width});
+	});
+	$("#grid").delegate("#minusH", "click", function(event){
+		if (tilemap.width > 1){
+			// update the global object
+			tilemap.width --;
+			
+			// remove a collumn of grid element
+			$(".col_"+(tilemap.width)).remove();
+	        
+			// move the +/- buttons
+			$("#minusH").css({left: tilemap.tileWidth*tilemap.width-20});
+	        $("#plusH").css({left: tilemap.tileWidth*tilemap.width});
+		}
+	});
+	$("#grid").delegate("#plusV", "click", function(event){
+		// update the global object
+		tilemap.height ++;
+		
+		// add a collumn of grid element
+		var fragment = $("<div class='grid'/>").css({width: tilemap.tileWidth-1, height: tilemap.tileHeight-1});
+		for(var i=0; i < tilemap.width; i++) {
+            	var grid = fragment.clone().css({left: tilemap.tileWidth*i, top: tilemap.tileHeight*(tilemap.height-1)}).addClass("col_"+i+" row_"+(tilemap.height - 1));
+                $("#grid").append(grid);
+            	grid.data(GRID_NS,{x:i, y: tilemap.height-1});
+        }
+        
+		// move the +/- buttons
+		$("#minusV").css({top: tilemap.tileHeight*tilemap.height-20});
+        $("#plusV").css({top: tilemap.tileHeight*tilemap.height});
+	});
+	$("#grid").delegate("#minusV", "click", function(event){
+		if (tilemap.height > 1){
+			// update the global object
+			tilemap.height --;
+			
+			// remove a collumn of grid element
+			$(".row_"+(tilemap.height)).remove();
+	        
+			// move the +/- buttons
+		$("#minusV").css({top: tilemap.tileHeight*tilemap.height-20});
+        $("#plusV").css({top: tilemap.tileHeight*tilemap.height});
+		}
+	});
+	
+	// Handle the delete animation button
+	$("#animations").delegate("a.close", "click", function(event){
+		var animationDom = $(this).parent();
+		var animation = animationDom.data(ANIMATION_NS);
+		// remove tile to which this animation was applied
+		
+		// remove the animation
+		$(".tile").each(function(){
+			if($(this).data(TILE_NS) === animation.name){
+				$(this).remove();
+			}
+		});
+		var animationIndex = tilemap.animations.indexOf(animation);
+		tilemap.animations.splice(animationIndex, 1);
+		animationDom.remove();
+		
+		// shift all the animations right to this one
+		for (var i = animationIndex + 1 ; i < tilemap.animations.length + 1; i++){
+			$("#animation_"+(i+1)).css("left",8+120*(i-1));
 		}
 	});
 	
@@ -293,10 +411,10 @@ $(function(){
 		if(event.keyCode == '8') {
 			var coordinate = $(".grid.selected").data(GRID_NS);
 			if(coordinate !== undefined){
-				var tile = $("#tile_"+coordinate.x+"_"+coordinate.y);
+				var tile = $(".tile.col_"+coordinate.x+".row_"+coordinate.y);
 				if(tile.size() > 0){
-					tile.css("background", "");
 					tile.removeData(TILE_NS);
+					tile.remove();
 				}
 			}
 			return false;
@@ -317,13 +435,18 @@ $(function(){
     	}
     });
     
+    /** ------------------------------------------------------------
+     *  ------------------- Configure the dialogs ------------------
+        ------------------------------------------------------------  */ 
+    
     // Help dialog
     modalDialog.register("helpOverlay", "helpButton");
     
     // Add animation dialog
     modalDialog.register("addAnimationOverlay", "addAnimationButton", function(){
-    	animations.add();
-        return false;
+    	$(this).find(".intValue").each(validateIntInput);
+    	$("#addAnimationForm_input_name").each(validateUniqueName);
+        return animations.add();
 	});
 	
 	// Add the export dialog
@@ -368,8 +491,6 @@ $(function(){
 			}	
 		}
 		
-		
-		
 		// generate the map
 		exportText += "\n\n // the tilemap array\n";
 		exportText += "var map = [";
@@ -388,7 +509,7 @@ $(function(){
 				} else {
 					firstColumn = false;
 				}
-				var tileDom = $("#tile_"+j+"_"+i);
+				var tileDom = $(".tile.col_"+j+".row_"+i);
 				if(tileDom.size() > 0) {
 					var name = tileDom.data(TILE_NS);
 					if(name !== undefined){
@@ -413,6 +534,10 @@ $(function(){
     
     // New Tilemap Overlay
     modalDialog.register("newOverlay", "newButton", function(){
+    	// is there a validation error, then we don't accept the form
+    	$(this).find(".intValue").each(validateIntInput);
+        if($("#newForm").find(".failedValidation").size() > 0) return false;
+    	
     	var tileWidth  = parseInt($("#newForm_input_tile_width").val()); 
     	var tileHeight = parseInt($("#newForm_input_tile_height").val());
     	var mapWidth   = parseInt($("#newForm_input_map_width").val());
@@ -427,11 +552,17 @@ $(function(){
         var fragment = $("<div class='grid'/>").css({width: tileWidth-1, height: tileHeight-1});
 		for(var i=0; i < mapHeight; i++) {
             for(var j=0; j < mapWidth; j++){
-            	var grid = fragment.clone().css({left: (tileWidth)*j, top: (tileHeight)*i});
+            	var grid = fragment.clone().css({left: (tileWidth)*j, top: (tileHeight)*i}).addClass("row_"+i+" col_"+j);
                 $("#grid").append(grid);
             	grid.data(GRID_NS,{x:j, y: i});
             }
         }
+        // add the +/- button
+        $("#grid").append("<button class='gridButton' id='minusH' style='top: 10px; left: "+(tileWidth*j-20)+"px'>-</button>");
+        $("#grid").append("<button class='gridButton' id='plusH' style='top: 10px; left: "+(tileWidth*j)+"px'>+</button>");
+        $("#grid").append("<button class='gridButton' id='minusV' style='top: "+(tileHeight*i-20)+"px; left: 10px'>-</button>");
+        $("#grid").append("<button class='gridButton' id='plusV' style='top: "+(tileHeight*i)+"px; left: 10px'>+</button>");
+        
         switch(animationType){
         	case "simple animations" :
         		animations.setType(animations.SINGLE);
@@ -446,9 +577,6 @@ $(function(){
         $("#gridButton").removeClass("disabled");
         $("#saveButton").removeClass("disabled");
         
-        return false;
+        return true;
 	});
-	
-	$(window).resize(resize);
-	
 });
