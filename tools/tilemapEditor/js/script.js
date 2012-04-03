@@ -410,8 +410,8 @@ $(function(){
 	});
 	
 	// Handle the backspace key
-	$(window).keyup(function(event){ 
-		if(event.keyCode == '8') {
+	$(document).keydown(function(event){
+		if(event.keyCode == '8' && event.srcElement.tagName !== "input") {
 			var coordinate = $(".grid.selected").data(GRID_NS);
 			if(coordinate !== undefined){
 				var tile = $(".tile.col_"+coordinate.x+".row_"+coordinate.y);
@@ -419,8 +419,8 @@ $(function(){
 					tile.removeData(TILE_NS);
 					tile.remove();
 				}
+				event.preventDefault();
 			}
-			return false;
 		}
 	});
     
