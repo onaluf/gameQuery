@@ -391,9 +391,6 @@
                             //Do we need to activate/deactivate the first/last column
                             var left = gameQuery.posx;
                             
-                            //Get the tileSet offset (relative to the playground)
-                            tileSetOffset.left += gameQuery.posx;
-
                             //activates the visible tiles
                             var firstColumn = Math.max(Math.min(Math.floor(-tileSetOffset.left/gameQuery.width), gameQuery.sizex),0);
                             var lastColumn = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].width-tileSetOffset.left)/gameQuery.width), gameQuery.sizex),0);
@@ -425,8 +422,6 @@
                             break;
                         case "y":
                             //Do we need to activate/deactivate the first/last row
-                            //Get the tileSet offset (relative to the playground)
-                            tileSetOffset.top += gameQuery.posy;
 
                             //actvates the visible tiles
                             var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/gameQuery.height), gameQuery.sizey), 0);
