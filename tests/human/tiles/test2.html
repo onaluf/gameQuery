@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+        <script src="../../../jquery.gamequery.js"></script>
+        <script>
+            $(function(){
+                var multiAnimation = new $.gameQuery.Animation({imageURL: "m.png", 
+                                                                type: $.gameQuery.ANIMATION_HORIZONTAL | $.gameQuery.ANIMATION_MULTI, 
+                                                                numberOfFrame: 3, 
+                                                                delta: 10, 
+                                                                distance: 10,
+                                                                rate: 300});
+                
+                var tileDef = [[1,2,3,1,2,3,1,2,3],
+                               [2,3,1,2,3,1,2,3,1],
+                               [3,1,2,3,1,2,3,1,2]];
+                
+                $("#playground").playground({height: 60, width: 90});
+                
+                $.playground()
+					.addGroup("testGroup1", {height: 60, width: 180, posx: 0})
+						.addTilemap("map1",    tileDef, multiAnimation, {width: 10, height: 10, sizex: 9, sizey: 3, posx: 0}).end()
+						.addTilemap("map2",    tileDef, multiAnimation, {width: 10, height: 10, sizex: 9, sizey: 3, posx: 90}).end()
+					.end()
+					.addGroup("testGroup2", {height: 60, width: 90, posy: 60})
+						.addTilemap("map3",    tileDef, multiAnimation, {width: 10, height: 10, sizex: 9, sizey: 3, posx: 0});
+						
+                $("#testGroup1").x(-45);
+                $("#testGroup2").y(30);
+                $.playground().startGame();
+            });
+        </script>
+    </head>
+    <body>
+        <h2>All the squares should be animated</h2>
+        <div id="playground" style="width: 350px; height: 50px; background: white"></div>
+    </body>
+</html>
