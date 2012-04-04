@@ -586,7 +586,7 @@ $(function(){
         $("#addAnimationButton").removeClass("disabled");
         $("#gridButton").removeClass("disabled");
         $("#saveButton").removeClass("disabled");
-        
+        $("#newButton").addClass("disabled");
         return true;
 	});
 });
