@@ -1245,7 +1245,7 @@
         	var gameQuery = this[0].gameQuery;
 
 			if (flip === undefined) {
-				gameQuery.factorh *= -1;
+				return (gameQuery.factorh !== undefined) ? (gameQuery.factorh === -1) : false;
 			} else if (flip) {
 				gameQuery.factorh = -1;
 			} else {
@@ -1262,7 +1262,7 @@
         	var gameQuery = this[0].gameQuery;
 
 			if (flip === undefined) {
-				gameQuery.factorv *= -1;
+				return (gameQuery.factorv !== undefined) ? (gameQuery.factorv === -1) : false;;
 			} else if (flip) {
 				gameQuery.factorv = -1;
 			} else {
