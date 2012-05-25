@@ -988,7 +988,19 @@
          * For now all abject are considered to be boxes.
          * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
          */
-        collision: function(filter){
+        collision: function(arg1, arg2){
+        	var filter, override;
+        	if ($.isPlainObject(arg1)){
+        		override = arg1;
+        	} else if (typeof arg1 === "string") {
+        		filter = arg1;
+        	}
+        	if ($.isPlainObject(arg2)){
+        		override = arg2;
+        	} else if (typeof arg2 === "string") {
+        		filter = arg2;
+        	}
+        	
             var resultList = [];
 
             //retrieve 'this' offset by looking at the parents
@@ -1001,12 +1013,32 @@
                 itsParent = itsParent.parentNode;
             }
 
-            // retrieve the gameQuery object
-            var gameQuery = this[0].gameQuery;
-
-
             // retrieve the playground's absolute position and size information
             var pgdGeom = {top: 0, left: 0, bottom: $.playground().height(), right: $.playground().width()};
+
+            // retrieve the gameQuery object and correct it with the override
+            var gameQuery = jQuery.extend(true, {}, this[0].gameQuery);
+
+			// retrieve the BoundingCircle and correct it with the override
+            var boundingCircle = jQuery.extend(true, {}, gameQuery.boundingCircle);
+            if(override && override.w){
+            	gameQuery.width = override.w;
+            } else if(override && override.h){
+            	gameQuery.height = override.h;
+            }
+            boundingCircle.originalRadius = Math.sqrt(Math.pow(gameQuery.width,2) + Math.pow(gameQuery.width,2))/2
+            boundingCircle.radius = gameQuery.factor*boundingCircle.originalRadius;
+            
+            if(override && override.x){
+            	boundingCircle.x = override.x + gameQuery.width/2;
+            }
+            if(override && override.y){
+            	boundingCircle.y = override.y + gameQuery.height/2;
+            }
+            i
+            
+            gameQuery.boundingCircle = boundingCircle;
+			
 
             // Is 'this' inside the playground ?
             if( (gameQuery.boundingCircle.y + gameQuery.boundingCircle.radius + offsetY < pgdGeom.top)    ||
