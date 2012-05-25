@@ -1023,19 +1023,19 @@
             var boundingCircle = jQuery.extend(true, {}, gameQuery.boundingCircle);
             if(override && override.w){
             	gameQuery.width = override.w;
-            } else if(override && override.h){
+            }
+            if(override && override.h){
             	gameQuery.height = override.h;
             }
-            boundingCircle.originalRadius = Math.sqrt(Math.pow(gameQuery.width,2) + Math.pow(gameQuery.width,2))/2
+            boundingCircle.originalRadius = Math.sqrt(Math.pow(gameQuery.width,2) + Math.pow(gameQuery.height,2))/2
             boundingCircle.radius = gameQuery.factor*boundingCircle.originalRadius;
             
             if(override && override.x){
-            	boundingCircle.x = override.x + gameQuery.width/2;
+            	boundingCircle.x = override.x + gameQuery.width/2.0;
             }
             if(override && override.y){
-            	boundingCircle.y = override.y + gameQuery.height/2;
+            	boundingCircle.y = override.y + gameQuery.height/2.0;
             }
-            i
             
             gameQuery.boundingCircle = boundingCircle;
 			
