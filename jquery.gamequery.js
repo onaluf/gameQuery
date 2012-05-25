@@ -206,13 +206,13 @@
                                 }
                             }
                             // update the background:
-                            if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL){
+                            if((gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL) && (gameQuery.animation.numberOfFrame > 1)){
                                 if(gameQuery.multi){
                                     $(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.multi)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
                                 } else {
                                     $(this).css("background-position",""+(-gameQuery.animation.offsetx)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
                                 }
-                            } else if(gameQuery.animation.type & $.gameQuery.ANIMATION_HORIZONTAL) {
+                            } else if((gameQuery.animation.type & $.gameQuery.ANIMATION_HORIZONTAL) && (gameQuery.animation.numberOfFrame > 1)) {
                                 if(gameQuery.multi){
                                     $(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.animation.delta*gameQuery.currentFrame)+"px "+(-gameQuery.animation.offsety-gameQuery.multi)+"px");
                                 } else {
@@ -283,15 +283,15 @@
                     $(this).find(".active").each(function(){
                         if($.isArray(gameQuery.frameTracker)){
                             var animationNumber = this.gameQuery.animationNumber
-                            if(gameQuery.animations[animationNumber].type & $.gameQuery.ANIMATION_VERTICAL){
+                            if((gameQuery.animations[animationNumber].type & $.gameQuery.ANIMATION_VERTICAL) && (gameQuery.animations[animationNumber].numberOfFrame > 1)){
                                 $(this).css("background-position",""+(-gameQuery.animations[animationNumber].offsetx)+"px "+(-gameQuery.animations[animationNumber].offsety-gameQuery.animations[animationNumber].delta*gameQuery.frameTracker[animationNumber])+"px");
-                            } else if(gameQuery.animations[animationNumber].type & $.gameQuery.ANIMATION_HORIZONTAL) {
+                            } else if((gameQuery.animations[animationNumber].type & $.gameQuery.ANIMATION_HORIZONTAL) && (gameQuery.animations[animationNumber].numberOfFrame > 1)) {
                                 $(this).css("background-position",""+(-gameQuery.animations[animationNumber].offsetx-gameQuery.animations[animationNumber].delta*gameQuery.frameTracker[animationNumber])+"px "+(-gameQuery.animations[animationNumber].offsety)+"px");
                             }
                         } else {
-                            if(gameQuery.animations.type & $.gameQuery.ANIMATION_VERTICAL){
+                            if((gameQuery.animations.type & $.gameQuery.ANIMATION_VERTICAL) && (gameQuery.animations.numberOfFrame > 1)){
                                 $(this).css("background-position",""+(-gameQuery.animations.offsetx-this.gameQuery.multi)+"px "+(-gameQuery.animations.offsety-gameQuery.animations.delta*gameQuery.frameTracker)+"px");
-                            } else if(gameQuery.animations.type & $.gameQuery.ANIMATION_HORIZONTAL) {
+                            } else if((gameQuery.animations.type & $.gameQuery.ANIMATION_HORIZONTAL)  && (gameQuery.animations.numberOfFrame > 1)) {
                                 $(this).css("background-position",""+(-gameQuery.animations.offsetx-gameQuery.animations.delta*gameQuery.frameTracker)+"px "+(-gameQuery.animations.offsety-this.gameQuery.multi)+"px");
                             }
                         }
