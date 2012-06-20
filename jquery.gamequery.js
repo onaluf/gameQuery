@@ -7,10 +7,6 @@
 // this allows use of the convenient $ notation in a plugin
 (function($) {
     /**
-      * Constants
-      */
-
-    /**
       * This namespace will be prepended to data values stored by this plugin.
       */
     var GAMEQUERY_NAMESPACE = 'GAMEQUERY__';
@@ -22,12 +18,12 @@
         Animation: function (options) {
             // private default values
             var defaults = {
-                imageURL:		"",
-                numberOfFrame:	1,
-                delta:			0,
-                rate: 			30,
-                type:			0,
-                distance:		0,
+                imageURL:        "",
+                numberOfFrame:    1,
+                delta:            0,
+                rate:             30,
+                type:            0,
+                distance:        0,
                 offsetx:        0,
                 offsety:        0
             };
@@ -36,12 +32,12 @@
             options = $.extend(defaults, options);
 
             //"public" attributes:
-            this.imageURL		= options.imageURL;		// The url of the image to be used as an animation or sprite
-            this.numberOfFrame	= options.numberOfFrame;// The number of frames to be displayed when playing the animation
-            this.delta			= options.delta;		// The distance in pixels between two frames
-            this.rate			= options.rate;			// The rate at which the frames change in miliseconds
-            this.type			= options.type;			// The type of the animation.This is a bitwise OR of the properties.
-            this.distance		= options.distance;		// The distance in pixels between two animations
+            this.imageURL        = options.imageURL;        // The url of the image to be used as an animation or sprite
+            this.numberOfFrame    = options.numberOfFrame;// The number of frames to be displayed when playing the animation
+            this.delta            = options.delta;        // The distance in pixels between two frames
+            this.rate            = options.rate;            // The rate at which the frames change in miliseconds
+            this.type            = options.type;            // The type of the animation.This is a bitwise OR of the properties.
+            this.distance        = options.distance;        // The distance in pixels between two animations
             this.offsetx        = options.offsetx;      // The x coordinate where the first sprite begins
             this.offsety        = options.offsety;      // The y coordinate where the first sprite begins
 
@@ -65,12 +61,12 @@
         GEOMETRY_DISC:        2,
 
         // basic values
-		refreshRate: 		  30,
+        refreshRate:           30,
 
         /**
          * An object to manage resource loading
          */
-		resourceManager: {
+        resourceManager: {
             animations: [],    // List of animations / images used in the game
             sounds:     [],    // List of sounds used in the game
             callbacks:  [],    // List of the functions called at each refresh
@@ -175,10 +171,9 @@
 
                             // does 'this' loops?
                             if(gameQuery.animation.type & $.gameQuery.ANIMATION_ONCE){
-                                if(gameQuery.currentFrame < gameQuery.animation.numberOfFrame-2){
+                                if(gameQuery.currentFrame < gameQuery.animation.numberOfFrame-1){
                                     gameQuery.currentFrame += gameQuery.frameIncrement;
-                                } else if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-2) {
-                                    gameQuery.currentFrame += gameQuery.frameIncrement;
+                                } else if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-1) {
                                     // does 'this' has a callback ?
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
                                         if($.isFunction(gameQuery.callback)){
@@ -187,15 +182,15 @@
                                     }
                                 }
                             } else {
-                            	if(gameQuery.animation.type & $.gameQuery.ANIMATION_PINGPONG){
-                            		if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-1 && gameQuery.frameIncrement == 1) {
-                            			gameQuery.frameIncrement = -1;
-                            		} else if (gameQuery.currentFrame == 0 && gameQuery.frameIncrement == -1) {
-                            			gameQuery.frameIncrement = 1;
-                            		}
-                            	}
+                                if(gameQuery.animation.type & $.gameQuery.ANIMATION_PINGPONG){
+                                    if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-1 && gameQuery.frameIncrement == 1) {
+                                        gameQuery.frameIncrement = -1;
+                                    } else if (gameQuery.currentFrame == 0 && gameQuery.frameIncrement == -1) {
+                                        gameQuery.frameIncrement = 1;
+                                    }
+                                }
 
-                            	gameQuery.currentFrame = (gameQuery.currentFrame+gameQuery.frameIncrement)%gameQuery.animation.numberOfFrame;
+                                gameQuery.currentFrame = (gameQuery.currentFrame+gameQuery.frameIncrement)%gameQuery.animation.numberOfFrame;
                                 if(gameQuery.currentFrame == 0){
                                     // does 'this' has a callback ?
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
@@ -244,13 +239,13 @@
                                         gameQuery.frameTracker[i] += gameQuery.frameIncrement[i];
                                     }
                                 } else {
-                                	if(gameQuery.animations[i].type & $.gameQuery.ANIMATION_PINGPONG){
-	                            		if(gameQuery.frameTracker[i] == gameQuery.animations[i].numberOfFrame-1 && gameQuery.frameIncrement[i] == 1) {
-	                            			gameQuery.frameIncrement[i] = -1;
-	                            		} else if (gameQuery.frameTracker[i] == 0 && gameQuery.frameIncrement[i] == -1) {
-	                            			gameQuery.frameIncrement[i] = 1;
-	                            		}
-	                            	}
+                                    if(gameQuery.animations[i].type & $.gameQuery.ANIMATION_PINGPONG){
+                                        if(gameQuery.frameTracker[i] == gameQuery.animations[i].numberOfFrame-1 && gameQuery.frameIncrement[i] == 1) {
+                                            gameQuery.frameIncrement[i] = -1;
+                                        } else if (gameQuery.frameTracker[i] == 0 && gameQuery.frameIncrement[i] == -1) {
+                                            gameQuery.frameIncrement[i] = 1;
+                                        }
+                                    }
                                     gameQuery.frameTracker[i] = (gameQuery.frameTracker[i]+gameQuery.frameIncrement[i])%gameQuery.animations[i].numberOfFrame;
                                 }
                             }
@@ -265,13 +260,13 @@
                                     gameQuery.frameTracker += gameQuery.frameIncrement;
                                 }
                             } else {
-                            	if(gameQuery.animations.type & $.gameQuery.ANIMATION_PINGPONG){
-                            		if(gameQuery.frameTracker == gameQuery.animations.numberOfFrame-1 && gameQuery.frameIncrement == 1) {
-                            			gameQuery.frameIncrement = -1;
-                            		} else if (gameQuery.frameTracker == 0 && gameQuery.frameIncrement == -1) {
-                            			gameQuery.frameIncrement = 1;
-                            		}
-                            	}
+                                if(gameQuery.animations.type & $.gameQuery.ANIMATION_PINGPONG){
+                                    if(gameQuery.frameTracker == gameQuery.animations.numberOfFrame-1 && gameQuery.frameIncrement == 1) {
+                                        gameQuery.frameIncrement = -1;
+                                    } else if (gameQuery.frameTracker == 0 && gameQuery.frameIncrement == -1) {
+                                        gameQuery.frameIncrement = 1;
+                                    }
+                                }
                                 gameQuery.frameTracker = (gameQuery.frameTracker+gameQuery.frameIncrement)%gameQuery.animations.numberOfFrame;
                             }
                         }
@@ -374,15 +369,15 @@
                 //then we have a tilemap!
                 // find the tilemap offset relative to the playground:
                 var tileSetOffset = {top: gameQuery.posy, left: gameQuery.posx};
-	            var parent = descriptor.parent();
-	            while(parent[0] !== $.gameQuery.playground[0]) {
-	            	if (parent[0].gameQuery !== undefined) {
-	            		tileSetOffset.left += parent[0].gameQuery.posx;
-	            		tileSetOffset.top += parent[0].gameQuery.posy;
-	            	}
-	            	parent = $(parent).parent();
-	            }
-	            
+                var parent = descriptor.parent();
+                while(parent[0] !== $.gameQuery.playground[0]) {
+                    if (parent[0].gameQuery !== undefined) {
+                        tileSetOffset.left += parent[0].gameQuery.posx;
+                        tileSetOffset.top += parent[0].gameQuery.posy;
+                    }
+                    parent = $(parent).parent();
+                }
+                
                 // test what kind of transformation we have and react accordingly:
                 // Update the descriptor
                 for(property in transformation){
@@ -583,11 +578,12 @@
                     throw "Old playground usage, use $.playground() to retreive the playground and $('mydiv').playground(options) to set the div!";
                 }
                 options = $.extend({
-                    height:		320,
-                    width:		480,
+                    height:        320,
+                    width:        480,
                     refreshRate: 30,
-                    position:	"absolute",
-                    keyTracker:	false,
+                    position:    "absolute",
+                    keyTracker:    false,
+                    mouseTracker: false,
                     disableCollision: false
                 }, options);
                 //We save the playground node and set some variable for this node:
@@ -619,6 +615,25 @@
                         $.gameQuery.keyTracker[event.keyCode] = false;
                     });
                 }
+                //Add the mouseTracker to the gameQuery object:
+                 $.gameQuery.mouseTracker = {
+                    x: 0,
+                    y: 0};
+                // we only enable the real tracking if the users wants it
+                //$.gameQuery.playground
+                var scenegraphOffset = $.gameQuery.playground.offset();
+                if(options.mouseTracker){
+                    $($.gameQuery.playground).mousemove(function(event){
+                        $.gameQuery.mouseTracker.x = event.pageX - scenegraphOffset.left;
+                        $.gameQuery.mouseTracker.y = event.pageY - scenegraphOffset.top;
+                    });
+                    $(document).mousedown(function(event){
+                        $.gameQuery.mouseTracker[event.which] = true;
+                    });
+                    $(document).mouseup(function(event){
+                        $.gameQuery.mouseTracker[event.which] = false;
+                    });
+                }
             }
             return this;
         },
@@ -646,14 +661,14 @@
         */
         addGroup: function(group, options) {
             options = $.extend({
-                width:		32,
-                height:		32,
-                posx:		0,
-                posy:		0,
-                posz:		0,
+                width:        32,
+                height:        32,
+                posx:        0,
+                posy:        0,
+                posz:        0,
                 posOffsetX: 0,
                 posOffsetY: 0,
-                overflow: 	"visible",
+                overflow:     "visible",
                 geometry:   $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:      0,
                 factor:     1,
@@ -684,20 +699,20 @@
         */
         addSprite: function(sprite, options) {
             options = $.extend({
-                width:			32,
-                height:			32,
-                posx:			0,
-                posy:			0,
-                posz:			0,
-                posOffsetX: 	0,
-                posOffsetY: 	0,
-                idleCounter:	0,
-                currentFrame:	0,
+                width:            32,
+                height:            32,
+                posx:            0,
+                posy:            0,
+                posz:            0,
+                posOffsetX:     0,
+                posOffsetY:     0,
+                idleCounter:    0,
+                currentFrame:    0,
                 frameIncrement: 1,
                 geometry:       $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:          0,
                 factor:         1,
-				playing:        true,
+                playing:        true,
                 factorh:        1,
                 factorv:        1
             }, options);
@@ -711,7 +726,7 @@
 
             //if the game has already started we want to add the animation's image as a background now:
             if(options.animation){
-	            // the second test is a fix for default background	(https://github.com/onaluf/gameQuery/issues/3)
+                // the second test is a fix for default background    (https://github.com/onaluf/gameQuery/issues/3)
                 if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
                     $("#"+sprite).css("background-image", "url("+options.animation.imageURL+")");
                 }
@@ -754,16 +769,16 @@
         * This is a non-destructive call.
         */
         addTilemap: function(name, tileDescription, animationList, options){
-        	options = $.extend({
-                width:			32,
-                height:			32,
+            options = $.extend({
+                width:            32,
+                height:            32,
                 sizex:          32,
                 sizey:          32,
-                posx:			0,
-                posy:			0,
-                posz:			0,
-                posOffsetX: 	0,
-                posOffsetY: 	0,
+                posx:            0,
+                posy:            0,
+                posz:            0,
+                posOffsetX:     0,
+                posOffsetY:     0,
                 factorh:        1,
                 factorv:        1
             }, options);
@@ -775,7 +790,7 @@
             } else {
                 this.append(tileSet);
             }
-	
+    
             if($.isArray(animationList)){
                 var frameTracker = [];
                 var idleCounter = [];
@@ -801,8 +816,8 @@
             }
 
             if(typeof tileDescription == "function"){
-				for(var i=0; i<options.sizey; i++){
-            		for(var j=0; j<options.sizex; j++){
+                for(var i=0; i<options.sizey; i++){
+                    for(var j=0; j<options.sizex; j++){
                         if(tileDescription(i,j) != 0){
                             if($.isArray(animationList)){
                                 // for many simple animation:
@@ -830,11 +845,11 @@
                                 newTile.addClass("tileType_"+(tileDescription(i,j)-1));
                             }
                         }
-            		}
-            	}
+                    }
+                }
             } else if(typeof tileDescription == "object") {
-            	for(var i=0; i<tileDescription.length; i++){
-            		for(var j=0; j<tileDescription[0].length; j++){
+                for(var i=0; i<tileDescription.length; i++){
+                    for(var j=0; j<tileDescription[0].length; j++){
                         if(tileDescription[i][j] != 0){
                             if($.isArray(animationList)){
                                 // for many simple animation:
@@ -863,18 +878,18 @@
                                 newTile.addClass("tileType_"+(tileDescription[i][j]-1));
                             }
                         }
-            		}
-            	}
+                    }
+                }
             }
             //Get the tileSet offset (relative to the playground)
             var tileSetOffset = {top: options.posy, left: options.posx};
             var parent = this;
             while(parent[0] !== $.gameQuery.playground[0]) {
-            	if (parent[0].gameQuery !== undefined) {
-            		tileSetOffset.left += parent[0].gameQuery.posx;
-            		tileSetOffset.top += parent[0].gameQuery.posy;
-            	}
-            	parent = $(parent).parent();
+                if (parent[0].gameQuery !== undefined) {
+                    tileSetOffset.left += parent[0].gameQuery.posx;
+                    tileSetOffset.top += parent[0].gameQuery.posy;
+                }
+                parent = $(parent).parent();
             }
             //var playgroundOffset = $.gameQuery.playground.offset();
             //var tileSetOffset = tileSet.offset();
@@ -899,18 +914,18 @@
             return this.pushStack(tileSet);
         },
 
-		/**
-		 * Stop the animation at the current frame
-		 */
+        /**
+         * Stop the animation at the current frame
+         */
         pauseAnimation: function() {
-			this[0].gameQuery.playing = false;
-			return this;
+            this[0].gameQuery.playing = false;
+            return this;
         },
 
-		/**
-		 * Resume the animation (if paused)
-		 */
-		resumeAnimation: function() {
+        /**
+         * Resume the animation (if paused)
+         */
+        resumeAnimation: function() {
             this[0].gameQuery.playing = true;
             return this;
         },
@@ -942,8 +957,8 @@
                     gameQuery.currentFrame = 0;
                     gameQuery.frameIncrement = 1;
 
-					if (animation.imageURL !== '') {this.css("backgroundImage", "url('"+animation.imageURL+"')");}
-					this.css({"background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
+                    if (animation.imageURL !== '') {this.css("backgroundImage", "url('"+animation.imageURL+"')");}
+                    this.css({"background-position": ""+(-animation.offsetx)+"px "+(-animation.offsety)+"px"});
 
                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
                         this.css("background-repeat", "repeat-x");
@@ -989,18 +1004,18 @@
          * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
          */
         collision: function(arg1, arg2){
-        	var filter, override;
-        	if ($.isPlainObject(arg1)){
-        		override = arg1;
-        	} else if (typeof arg1 === "string") {
-        		filter = arg1;
-        	}
-        	if ($.isPlainObject(arg2)){
-        		override = arg2;
-        	} else if (typeof arg2 === "string") {
-        		filter = arg2;
-        	}
-        	
+            var filter, override;
+            if ($.isPlainObject(arg1)){
+                override = arg1;
+            } else if (typeof arg1 === "string") {
+                filter = arg1;
+            }
+            if ($.isPlainObject(arg2)){
+                override = arg2;
+            } else if (typeof arg2 === "string") {
+                filter = arg2;
+            }
+            
             var resultList = [];
 
             //retrieve 'this' offset by looking at the parents
@@ -1019,26 +1034,26 @@
             // retrieve the gameQuery object and correct it with the override
             var gameQuery = jQuery.extend(true, {}, this[0].gameQuery);
 
-			// retrieve the BoundingCircle and correct it with the override
+            // retrieve the BoundingCircle and correct it with the override
             var boundingCircle = jQuery.extend(true, {}, gameQuery.boundingCircle);
             if(override && override.w){
-            	gameQuery.width = override.w;
+                gameQuery.width = override.w;
             }
             if(override && override.h){
-            	gameQuery.height = override.h;
+                gameQuery.height = override.h;
             }
             boundingCircle.originalRadius = Math.sqrt(Math.pow(gameQuery.width,2) + Math.pow(gameQuery.height,2))/2
             boundingCircle.radius = gameQuery.factor*boundingCircle.originalRadius;
             
             if(override && override.x){
-            	boundingCircle.x = override.x + gameQuery.width/2.0;
+                boundingCircle.x = override.x + gameQuery.width/2.0;
             }
             if(override && override.y){
-            	boundingCircle.y = override.y + gameQuery.height/2.0;
+                boundingCircle.y = override.y + gameQuery.height/2.0;
             }
             
             gameQuery.boundingCircle = boundingCircle;
-			
+            
 
             // Is 'this' inside the playground ?
             if( (gameQuery.boundingCircle.y + gameQuery.boundingCircle.radius + offsetY < pgdGeom.top)    ||
@@ -1101,7 +1116,7 @@
 
         /**
         * Adds the sound to the resourceManager for later use and
-		* associates it to the selected dom element(s).
+        * associates it to the selected dom element(s).
         * This is a non-destructive call
         */
         addSound: function(sound, add) {
@@ -1274,34 +1289,34 @@
          * Flips the element(s) horizontally.
          */
         fliph: function(flip){
-        	var gameQuery = this[0].gameQuery;
+            var gameQuery = this[0].gameQuery;
 
-			if (flip === undefined) {
-				return (gameQuery.factorh !== undefined) ? (gameQuery.factorh === -1) : false;
-			} else if (flip) {
-				gameQuery.factorh = -1;
-			} else {
-				gameQuery.factorh = 1;
-			}
+            if (flip === undefined) {
+                return (gameQuery.factorh !== undefined) ? (gameQuery.factorh === -1) : false;
+            } else if (flip) {
+                gameQuery.factorh = -1;
+            } else {
+                gameQuery.factorh = 1;
+            }
 
-			return this.transform(this.rotate(), this.scale());
+            return this.transform(this.rotate(), this.scale());
         },
 
         /**
          * Flips the element(s) vertically.
          */
         flipv: function(flip){
-        	var gameQuery = this[0].gameQuery;
+            var gameQuery = this[0].gameQuery;
 
-			if (flip === undefined) {
-				return (gameQuery.factorv !== undefined) ? (gameQuery.factorv === -1) : false;;
-			} else if (flip) {
-				gameQuery.factorv = -1;
-			} else {
-				gameQuery.factorv = 1;
-			}
+            if (flip === undefined) {
+                return (gameQuery.factorv !== undefined) ? (gameQuery.factorv === -1) : false;;
+            } else if (flip) {
+                gameQuery.factorv = -1;
+            } else {
+                gameQuery.factorv = 1;
+            }
 
-			return this.transform(this.rotate(), this.scale());
+            return this.transform(this.rotate(), this.scale());
         },
 
 /** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
@@ -1320,10 +1335,10 @@
          */
         xyz: function(x, y, z, relative) {
              if (x === undefined) {
-             	return this.getxyz();
-	         } else {
-	         	return this.setxyz({x: x, y: y, z: z}, relative);
-	         }
+                 return this.getxyz();
+             } else {
+                 return this.setxyz({x: x, y: y, z: z}, relative);
+             }
         },
 
         /**
@@ -1333,35 +1348,35 @@
          */
         x: function(value, relative) {
              if (value === undefined) {
-             	return this.getxyz().x;
-	         } else {
-	         	return this.setxyz({x: value}, relative);
-	         }
+                 return this.getxyz().x;
+             } else {
+                 return this.setxyz({x: value}, relative);
+             }
         },
 
         y: function(value, relative) {
              if (value === undefined) {
-             	return this.getxyz().y;
-	         } else {
-	         	return this.setxyz({y: value}, relative);
-	         }
+                 return this.getxyz().y;
+             } else {
+                 return this.setxyz({y: value}, relative);
+             }
         },
 
         z: function(value, relative) {
              if (value === undefined) {
-             	return this.getxyz().z;
-	         } else {
-	         	return this.setxyz({z: value}, relative);
-	         }
+                 return this.getxyz().z;
+             } else {
+                 return this.setxyz({z: value}, relative);
+             }
         },
 
         xy: function(x, y, relative) {
              if (x === undefined) {
-             	// we return the z too since it doesn't cost anything
-             	return this.getxyz();
-	         } else {
-	         	return this.setxyz({x: x, y: y}, relative);
-	         }
+                 // we return the z too since it doesn't cost anything
+                 return this.getxyz();
+             } else {
+                 return this.setxyz({x: x, y: y}, relative);
+             }
         },
 
         /**
@@ -1374,11 +1389,11 @@
          * return an object {w,h}
          */
         wh: function(w, h, relative) {
-        	if (w === undefined) {
-             	return this.getwh();
-	         } else {
-	         	return this.setwh({w: w, h: h}, relative);
-	         }
+            if (w === undefined) {
+                 return this.getwh();
+             } else {
+                 return this.setwh({w: w, h: h}, relative);
+             }
         },
 
         /**
@@ -1387,19 +1402,19 @@
          * @see wh for detailed documentation.
          */
         w: function(value, relative) {
-        	if (value === undefined) {
-             	return this.getwh().w;
-	         } else {
-	         	return this.setwh({w: value}, relative);
-	         }
+            if (value === undefined) {
+                 return this.getwh().w;
+             } else {
+                 return this.setwh({w: value}, relative);
+             }
         },
 
         h: function(value, relative) {
-        	if (value === undefined) {
-             	return this.getwh().h;
-	         } else {
-	         	return this.setwh({h: value}, relative);
-	         }
+            if (value === undefined) {
+                 return this.getwh().h;
+             } else {
+                 return this.setwh({h: value}, relative);
+             }
         },
 
         /**
@@ -1409,86 +1424,86 @@
          * You should really use .xyz() and .wh() instead.
          */
         getxyz: function() {
-        	var gameQuery = this[0].gameQuery;
-        	return {x: gameQuery.posx, y: gameQuery.posy, z: gameQuery.posz};
+            var gameQuery = this[0].gameQuery;
+            return {x: gameQuery.posx, y: gameQuery.posy, z: gameQuery.posz};
         },
 
         setxyz: function(option, relative) {
-        	var gameQuery = this[0].gameQuery;
+            var gameQuery = this[0].gameQuery;
 
-        	for (coordinate in option) {
-        		// Update the gameQuery object
-        		switch (coordinate) {
-        			case 'x':
-        				if(relative) {
-        					option.x += gameQuery.posx;
-        				}
-        				gameQuery.posx = option.x;
-        				this.css("left",""+(gameQuery.posx + gameQuery.posOffsetX)+"px");
-        				
-        				//update the sub tile maps (if any)
-        				this.find(".tileSet").each(function(){
-        					$(this).x(0, true);
-        				});
-        				break;
+            for (coordinate in option) {
+                // Update the gameQuery object
+                switch (coordinate) {
+                    case 'x':
+                        if(relative) {
+                            option.x += gameQuery.posx;
+                        }
+                        gameQuery.posx = option.x;
+                        this.css("left",""+(gameQuery.posx + gameQuery.posOffsetX)+"px");
+                        
+                        //update the sub tile maps (if any)
+                        this.find(".tileSet").each(function(){
+                            $(this).x(0, true);
+                        });
+                        break;
 
-        			case 'y':
-        				if(relative) {
-        					option.y += gameQuery.posy;
-        				}
-	        			gameQuery.posy = option.y;
-	        			this.css("top",""+(gameQuery.posy + gameQuery.posOffsetY)+"px");
-	        			
-	        			//update the sub tile maps (if any)
-        				this.find(".tileSet").each(function(){
-        					$(this).y(0, true);
-        				});
-        				break;
+                    case 'y':
+                        if(relative) {
+                            option.y += gameQuery.posy;
+                        }
+                        gameQuery.posy = option.y;
+                        this.css("top",""+(gameQuery.posy + gameQuery.posOffsetY)+"px");
+                        
+                        //update the sub tile maps (if any)
+                        this.find(".tileSet").each(function(){
+                            $(this).y(0, true);
+                        });
+                        break;
 
-        			case 'z':
-        				if(relative) {
-        					option.z += gameQuery.posz;
-        				}
-	        			gameQuery.posz = option.z;
-	        			this.css("z-index",gameQuery.posz);
-        				break;
-        		}
-        	}
-        	$.gameQuery.update(this, option);
-        	return this;
+                    case 'z':
+                        if(relative) {
+                            option.z += gameQuery.posz;
+                        }
+                        gameQuery.posz = option.z;
+                        this.css("z-index",gameQuery.posz);
+                        break;
+                }
+            }
+            $.gameQuery.update(this, option);
+            return this;
         },
 
         getwh: function() {
-        	var gameQuery = this[0].gameQuery;
-        	return {w: gameQuery.width, h: gameQuery.height};
+            var gameQuery = this[0].gameQuery;
+            return {w: gameQuery.width, h: gameQuery.height};
         },
 
         setwh: function(option, relative) {
-        	var gameQuery = this[0].gameQuery;
+            var gameQuery = this[0].gameQuery;
 
-        	for (coordinate in option) {
-        		// Update the gameQuery object
-        		switch (coordinate) {
-        			case 'w':
-        				if(relative) {
-        					option.w += gameQuery.width;
-        				}
-        				gameQuery.width = option.w;
-        				this.css("width","" + gameQuery.width + "px");
-        				break;
+            for (coordinate in option) {
+                // Update the gameQuery object
+                switch (coordinate) {
+                    case 'w':
+                        if(relative) {
+                            option.w += gameQuery.width;
+                        }
+                        gameQuery.width = option.w;
+                        this.css("width","" + gameQuery.width + "px");
+                        break;
 
-        			case 'h':
-        				if(relative) {
-        					option.h += gameQuery.height;
-        				}
-	        			gameQuery.height = option.h;
-	        			this.css("height","" + gameQuery.height + "px");
-        				break;
-        		}
-        	}
-        	$.gameQuery.update(this, option);
-        	return this;
+                    case 'h':
+                        if(relative) {
+                            option.h += gameQuery.height;
+                        }
+                        gameQuery.height = option.h;
+                        this.css("height","" + gameQuery.height + "px");
+                        break;
+                }
+            }
+            $.gameQuery.update(this, option);
+            return this;
         }
-	});
+    });
 
 })(jQuery);
