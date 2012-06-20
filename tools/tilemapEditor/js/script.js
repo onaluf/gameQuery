@@ -20,7 +20,7 @@ var toInt = function(value){
 }
 	
 var generateBackground = function(animation) {
-	var background = "url('"+animation.url+"') -"+animation.offsetx+" -"+animation.offsety;
+	var background = "url('"+animation.url+"') -"+animation.offsetx+"px -"+animation.offsety+"px";
 	return background
 }
 
