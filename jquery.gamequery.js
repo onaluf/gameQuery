@@ -9,7 +9,7 @@
 (function($) {
     
     // This prefix can be use whenever needed to namespace CSS classes, .data() inputs aso.
-    var gQprefix       = "gQ_";
+    var gQprefix = "gQ_";
     
     /**
      * Utility function that returns the radius for a geometry.
@@ -334,7 +334,7 @@
 
 
                     // Update the background of all active tiles
-                    $(this).find(".active").each(function(){
+                    $(this).find("."+$.gameQuery.activeCssClass).each(function(){
                         if($.isArray(gameQuery.frameTracker)){
                             var animationNumber = this.gameQuery.animationNumber
                             if((gameQuery.animations[animationNumber].type & $.gameQuery.ANIMATION_VERTICAL) && (gameQuery.animations[animationNumber].numberOfFrame > 1)){
@@ -358,8 +358,8 @@
              * Called periodically to refresh the state of the game.
              */
             refresh: function() {
-                $.gameQuery.playground.find(".sprite").each(this.refreshSprite);
-                $.gameQuery.playground.find(".tileSet").each(this.refreshTilemap);
+                $.gameQuery.playground.find("."+$.gameQuery.spriteCssClass).each(this.refreshSprite);
+                $.gameQuery.playground.find("."+$.gameQuery.tilemapCssClass).each(this.refreshTilemap);
                 var deadCallback= new Array();
                 for (var i = this.callbacks.length-1; i >= 0; i--){
                     if(this.callbacks[i].idleCounter == this.callbacks[i].rate-1){
@@ -460,20 +460,20 @@
                             for(var i = gameQuery.firstRow; i < gameQuery.lastRow; i++){
                                 // If old first col < new first col, deactivate the newly invisible tiles
                                 for(var j = gameQuery.firstColumn; j < firstColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
                                 }
                                 // And activate the newly visible tiles
                                 for(var j = gameQuery.lastColumn; j < lastColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
                                 }
 
                                 // If old first col > new first col, deactivate the newly invisible tiles
                                 for(var j = lastColumn; j < gameQuery.lastColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
                                 }
                                 // And activate the newly visible tiles
                                 for(var j = firstColumn; j < gameQuery.firstColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
                                 }
                             }
 
@@ -489,20 +489,20 @@
                             for(var j = gameQuery.firstColumn; j < gameQuery.lastColumn ; j++) {
                                 // If old first row < new first row, deactivate the newly invisible tiles
                                 for(var i = gameQuery.firstRow; i < firstRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
                                 }
                                 // And activate the newly visible tiles
                                 for(var i = gameQuery.lastRow; i < lastRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
                                 }
 
                                 // If old first row < new first row, deactivate the newly invisible tiles
                                 for(var i = lastRow; i < gameQuery.lastRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
                                 }
                                 // And activate the newly visible tiles
                                 for(var i = firstRow; i < gameQuery.firstRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
+                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
                                 }
                             }
 
@@ -556,8 +556,10 @@
             }
         },
         // CSS classes used to mark game element 
-        spriteCssClass: gQprefix + "sprite",
-        groupCssClass:  gQprefix + "group"
+        spriteCssClass:  gQprefix + "sprite",
+        groupCssClass:   gQprefix + "group",
+        tilemapCssClass: gQprefix + "tilemap",
+        activeCssClass:  gQprefix + "active"
     },
 
     /** 
@@ -624,9 +626,9 @@
                         height:   options.height+"px",
                         width:    options.width+"px"
                     })
-                    .append("<div id='scenegraph' style='visibility: hidden'/>");
+                    .append("<div id='"+gQprefix+"scenegraph' style='visibility: hidden'/>");
 
-                $.gameQuery.scenegraph = $("#scenegraph");
+                $.gameQuery.scenegraph = $("#"+gQprefix+"scenegraph");
 
                 // Add the keyTracker to the gameQuery object:
                 $.gameQuery.keyTracker = {};
@@ -685,14 +687,14 @@
          */
         addGroup: function(group, options) {
             options = $.extend({
-                width:        32,
-                height:        32,
-                posx:        0,
-                posy:        0,
-                posz:        0,
+                width:      32,
+                height:     32,
+                posx:       0,
+                posy:       0,
+                posz:       0,
                 posOffsetX: 0,
                 posOffsetY: 0,
-                overflow:     "visible",
+                overflow:   "visible",
                 geometry:   $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:      0,
                 factor:     1,
@@ -700,10 +702,10 @@
                 factorv:    1
             }, options);
 
-            var newGroupElement = "<div id='"+group+"' class='group' style='position: absolute; display: block; overflow: "+options.overflow+"; top: "+options.posy+"px; left: "+options.posx+"px; height: "+options.height+"px; width: "+options.width+"px;' />";
+            var newGroupElement = "<div id='"+group+"' class='"+$.gameQuery.groupCssClass+"' style='position: absolute; display: block; overflow: "+options.overflow+"; top: "+options.posy+"px; left: "+options.posx+"px; height: "+options.height+"px; width: "+options.width+"px;' />";
             if(this == $.gameQuery.playground){
                 $.gameQuery.scenegraph.append(newGroupElement);
-            } else if ((this == $.gameQuery.scenegraph)||(this.hasClass("group"))){
+            } else if ((this == $.gameQuery.scenegraph)||(this.hasClass($.gameQuery.groupCssClass))){
                 this.append(newGroupElement);
             }
             var newGroup = $("#"+group);
@@ -723,15 +725,15 @@
          */
         addSprite: function(sprite, options) {
             options = $.extend({
-                width:            32,
-                height:            32,
-                posx:            0,
-                posy:            0,
-                posz:            0,
+                width:          32,
+                height:         32,
+                posx:           0,
+                posy:           0,
+                posz:           0,
                 posOffsetX:     0,
                 posOffsetY:     0,
                 idleCounter:    0,
-                currentFrame:    0,
+                currentFrame:   0,
                 frameIncrement: 1,
                 geometry:       $.gameQuery.GEOMETRY_RECTANGLE,
                 angle:          0,
@@ -741,7 +743,7 @@
                 factorv:        1
             }, options);
 
-            var newSpriteElem = "<div id='"+sprite+"' class='sprite' style='position: absolute; display: block; overflow: hidden; height: "+options.height+"px; width: "+options.width+"px; left: "+options.posx+"px; top: "+options.posy+"px; background-position: "+((options.animation)? -options.animation.offsetx : 0)+"px "+((options.animation)? -options.animation.offsety : 0)+"px;' />";
+            var newSpriteElem = "<div id='"+sprite+"' class='"+$.gameQuery.spriteCssClass+"' style='position: absolute; display: block; overflow: hidden; height: "+options.height+"px; width: "+options.width+"px; left: "+options.posx+"px; top: "+options.posy+"px; background-position: "+((options.animation)? -options.animation.offsetx : 0)+"px "+((options.animation)? -options.animation.offsety : 0)+"px;' />";
             if(this == $.gameQuery.playground){
                 $.gameQuery.scenegraph.append(newSpriteElem);
             } else {
@@ -783,20 +785,20 @@
          */
         addTilemap: function(name, tileDescription, animationList, options){
             options = $.extend({
-                width:            32,
-                height:            32,
+                width:          32,
+                height:         32,
                 sizex:          32,
                 sizey:          32,
-                posx:            0,
-                posy:            0,
-                posz:            0,
+                posx:           0,
+                posy:           0,
+                posz:           0,
                 posOffsetX:     0,
                 posOffsetY:     0,
                 factorh:        1,
                 factorv:        1
             }, options);
 
-            var tileSet = $("<div class='tileSet' style='position: absolute; display: block; overflow: hidden;' />");
+            var tileSet = $("<div class='"+$.gameQuery.tilemapCssClass+"' style='position: absolute; display: block; overflow: hidden;' />");
             tileSet.css({top: options.posy, left: options.posx, height: options.height*options.sizey, width: options.width*options.sizex}).attr("id",name);
             if(this == $.gameQuery.playground){
                 $.gameQuery.scenegraph.append(tileSet);
@@ -841,8 +843,9 @@
                                                        posy: i*options.height,
                                                        animation: animationList[tileDescription(i,j)-1]});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
-                                newTile.removeClass("sprite");
-                                newTile.addClass("tileType_"+(tileDescription(i,j)-1));
+                                newTile.removeClass($.gameQuery.spriteCssClass);
+                                newTile.removeClass($.gameQuery.activeCssClass);
+                                newTile.addClass(gQprefix+"tileType_"+(tileDescription(i,j)-1));
                                 newTile[0].gameQuery.animationNumber = tileDescription(i,j)-1;
                             } else {
                                 // For multi-animation
@@ -854,8 +857,9 @@
                                                        animation: animationList});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.setAnimation(tileDescription(i,j)-1);
-                                newTile.removeClass("sprite");
-                                newTile.addClass("tileType_"+(tileDescription(i,j)-1));
+                                newTile.removeClass($.gameQuery.spriteCssClass);
+                                newTile.removeClass($.gameQuery.activeCssClass);
+                                newTile.addClass(gQprefix+"tileType_"+(tileDescription(i,j)-1));
                             }
                         }
                     }
@@ -873,8 +877,9 @@
                                                        posy: i*options.height,
                                                        animation: animationList[tileDescription[i][j]-1]});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
-                                newTile.removeClass("sprite");
-                                newTile.addClass("tileType_"+(tileDescription[i][j]-1));
+                                newTile.removeClass($.gameQuery.spriteCssClass);
+                                newTile.removeClass($.gameQuery.activeCssClass);
+                                newTile.addClass(gQprefix+"tileType_"+(tileDescription[i][j]-1));
                                 newTile[0].gameQuery.animationNumber = tileDescription[i][j]-1;
                             } else {
                                 // For multi-animation
@@ -886,9 +891,9 @@
                                                        animation: animationList});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.setAnimation(tileDescription[i][j]-1);
-                                newTile.removeClass("sprite");
-                                newTile.removeClass("active");
-                                newTile.addClass("tileType_"+(tileDescription[i][j]-1));
+                                newTile.removeClass($.gameQuery.spriteCssClass);
+                                newTile.removeClass($.gameQuery.activeCssClass);
+                                newTile.addClass(gQprefix+"tileType_"+(tileDescription[i][j]-1));
                             }
                         }
                     }
@@ -918,7 +923,7 @@
 
             for(var i = firstRow; i < lastRow; i++){
                 for(var j = firstColumn; j < lastColumn ; j++) {
-                    $("#tile_"+name+"_"+i+"_"+j).toggleClass("active");
+                    $("#tile_"+name+"_"+i+"_"+j).toggleClass($.gameQuery.activeCssClass);
                 }
             }
             return this.pushStack(tileSet);
@@ -1477,8 +1482,8 @@
                         gameQuery.posx = option.x;
                         this.css("left",""+(gameQuery.posx + gameQuery.posOffsetX)+"px");
                         
-                        //update the sub tile maps (if any)
-                        this.find(".tileSet").each(function(){
+                        //update the sub tile maps (if any), this forces to recompute which tiles are visible
+                        this.find("."+$.gameQuery.tilemapCssClass).each(function(){
                             $(this).x(0, true);
                         });
                         break;
@@ -1490,8 +1495,8 @@
                         gameQuery.posy = option.y;
                         this.css("top",""+(gameQuery.posy + gameQuery.posOffsetY)+"px");
                         
-                        //update the sub tile maps (if any)
-                        this.find(".tileSet").each(function(){
+                        //update the sub tile maps (if any), this forces to recompute which tiles are visible
+                        this.find("."+$.gameQuery.tilemapCssClass).each(function(){
                             $(this).y(0, true);
                         });
                         break;
