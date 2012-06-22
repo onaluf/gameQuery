@@ -1,16 +1,77 @@
 /*
  * gameQuery rev. $Revision$
  *
- * Copyright (c) 2008 Selim Arsever (gamequery.onaluf.org)
- * licensed under the MIT (MIT-LICENSE.txt)
+ * Copyright (c) 2012 Selim Arsever (http://gamequeryjs.com)
+ * licensed under the MIT-License
  */
-// this allows use of the convenient $ notation in a plugin
-(function($) {
-    /**
-      * This namespace will be prepended to data values stored by this plugin.
-      */
-    var GAMEQUERY_NAMESPACE = 'GAMEQUERY__';
 
+// This allows use of the convenient $ notation in a plugin
+(function($) {
+    
+    // This prefix can be use whenever needed to namespace CSS classes, .data() inputs aso.
+    var gQprefix       = "gQ_";
+    
+    /**
+     * Utility function that returns the radius for a geometry.
+     *
+     * @param {object} elem DOM element
+     * @param {float} angle the angle in degrees
+     * @return {object} .x, .y radius of geometry
+     */
+    var proj = function (elem, angle) {
+        switch (elem.geometry){
+            case $.gameQuery.GEOMETRY_RECTANGLE :
+                var b = angle*Math.PI*2/360;
+                var Rx = Math.abs(Math.cos(b)*elem.width/2*elem.factor)+Math.abs(Math.sin(b)*elem.height/2*elem.factor);
+                var Ry = Math.abs(Math.cos(b)*elem.height/2*elem.factor)+Math.abs(Math.sin(b)*elem.width/2*elem.factor);
+
+                return {x: Rx, y: Ry};
+        }
+    };
+    
+    /**
+     * Utility function that checks for collision between two elements.
+     *
+     * @param {object} elem1 DOM for the first element
+     * @param {float} offset1 offset of the first element
+     * @param {object} elem2 DOM for the second element
+     * @param {float} offset2 offset of the second element
+     * @return {boolean} if the two elements collide or not
+     */
+    var collide = function(elem1, offset1, elem2, offset2) {
+        // test real collision (only for two rectangles...)
+        if((elem1.geometry == $.gameQuery.GEOMETRY_RECTANGLE && elem2.geometry == $.gameQuery.GEOMETRY_RECTANGLE)){
+
+            var dx = offset2.x + elem2.boundingCircle.x - elem1.boundingCircle.x - offset1.x;
+            var dy = offset2.y + elem2.boundingCircle.y - elem1.boundingCircle.y - offset1.y;
+            var a  = Math.atan(dy/dx);
+
+            var Dx = Math.abs(Math.cos(a-elem1.angle*Math.PI*2/360)/Math.cos(a)*dx);
+            var Dy = Math.abs(Math.sin(a-elem1.angle*Math.PI*2/360)/Math.sin(a)*dy);
+
+            var R = proj(elem2, elem2.angle-elem1.angle);
+
+            if((elem1.width/2*elem1.factor+R.x <= Dx) || (elem1.height/2*elem1.factor+R.y <= Dy)) {
+                return false;
+            } else {
+                var Dx = Math.abs(Math.cos(a-elem2.angle*Math.PI*2/360)/Math.cos(a)*-dx);
+                var Dy = Math.abs(Math.sin(a-elem2.angle*Math.PI*2/360)/Math.sin(a)*-dy);
+
+                var R = proj(elem1, elem1.angle-elem2.angle);
+
+                if((elem2.width/2*elem2.factor+R.x <= Dx) || (elem2.height/2*elem2.factor+R.y <= Dy)) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        } else {
+            return false;
+        }
+    };
+    
+    
+    // Define the list of object/function accessible through $.
     $.extend({ gameQuery: {
         /**
          * This is the Animation Object
@@ -18,50 +79,51 @@
         Animation: function (options) {
             // private default values
             var defaults = {
-                imageURL:        "",
-                numberOfFrame:    1,
-                delta:            0,
-                rate:             30,
-                type:            0,
-                distance:        0,
-                offsetx:        0,
-                offsety:        0
+                imageURL:      "",
+                numberOfFrame: 1,
+                delta:         0,
+                rate:          30,
+                type:          0,
+                distance:      0,
+                offsetx:       0,
+                offsety:       0
             };
 
             // options extends defaults
             options = $.extend(defaults, options);
 
-            //"public" attributes:
-            this.imageURL        = options.imageURL;        // The url of the image to be used as an animation or sprite
-            this.numberOfFrame    = options.numberOfFrame;// The number of frames to be displayed when playing the animation
-            this.delta            = options.delta;        // The distance in pixels between two frames
-            this.rate            = options.rate;            // The rate at which the frames change in miliseconds
-            this.type            = options.type;            // The type of the animation.This is a bitwise OR of the properties.
-            this.distance        = options.distance;        // The distance in pixels between two animations
-            this.offsetx        = options.offsetx;      // The x coordinate where the first sprite begins
-            this.offsety        = options.offsety;      // The y coordinate where the first sprite begins
+            // "public" attributes:
+            this.imageURL      = options.imageURL;      // The url of the image to be used as an animation or sprite
+            this.numberOfFrame = options.numberOfFrame; // The number of frames to be displayed when playing the animation
+            this.delta         = options.delta;         // The distance in pixels between two frames
+            this.rate          = options.rate;          // The rate at which the frames change in miliseconds
+            this.type          = options.type;          // The type of the animation.This is a bitwise OR of the properties.
+            this.distance      = options.distance;      // The distance in pixels between two animations
+            this.offsetx       = options.offsetx;       // The x coordinate where the first sprite begins
+            this.offsety       = options.offsety;       // The y coordinate where the first sprite begins
 
-            //Whenever a new animation is created we add it to the ResourceManager animation list
+            // Whenever a new animation is created we add it to the ResourceManager animation list
             $.gameQuery.resourceManager.addAnimation(this);
 
             return true;
         },
 
-        // "constants" for the different types of an animation
+        /**
+         * "constants" for the different types of an animation
+         */ 
         ANIMATION_VERTICAL:   1,  // Generated by a vertical offset of the background
         ANIMATION_HORIZONTAL: 2,  // Generated by a horizontal offset of the background
         ANIMATION_ONCE:       4,  // Played only once (else looping indefinitely)
         ANIMATION_CALLBACK:   8,  // A callback is exectued at the end of a cycle
         ANIMATION_MULTI:      16, // The image file contains many animations
-        ANIMATION_PINGPONG:   32, // At the last frame of the animation it reverses
-                                  // (if used in conjunction with ONCE it will have no effect)
+        ANIMATION_PINGPONG:   32, // At the last frame of the animation it reverses (if used in conjunction with ONCE it will have no effect)
 
         // "constants" for the different type of geometry for a sprite
         GEOMETRY_RECTANGLE:   1,
         GEOMETRY_DISC:        2,
 
         // basic values
-        refreshRate:           30,
+        refreshRate:          30,
 
         /**
          * An object to manage resource loading
@@ -73,16 +135,16 @@
             running:    false, // State of the game,
 
             /**
-             * Loads resources before starting the game.
+             * Load resources before starting the game.
              */
             preload: function() {
-                //Start loading the images
+                // Start loading the images
                 for (var i = this.animations.length-1 ; i >= 0; i --){
                     this.animations[i].domO = new Image();
                     this.animations[i].domO.src = this.animations[i].imageURL;
                 }
 
-                //Start loading the sounds
+                // Start loading the sounds
                 for (var i = this.sounds.length-1 ; i >= 0; i --){
                     this.sounds[i].load();
                 }
@@ -91,7 +153,7 @@
             },
 
             /**
-             * Waits for all the resources called for in preload() to finish loading.
+             * Wait for all the resources called for in preload() to finish loading.
              */
             waitForResources: function() {
                 var loadbarEnabled = ($.gameQuery.loadbar != undefined);
@@ -99,14 +161,14 @@
                     $($.gameQuery.loadbar.id).width(0);
                     var loadBarIncremant = $.gameQuery.loadbar.width / (this.animations.length + this.sounds.length);
                 }
-                //check the images
+                // Check the images
                 var imageCount = 0;
                 for(var i=0; i < this.animations.length; i++){
                     if(this.animations[i].domO.complete){
                         imageCount++;
                     }
                 }
-                //check the sounds
+                // Check the sounds
                 var soundCount = 0;
                 for(var i=0; i < this.sounds.length; i++){
                     var temp = this.sounds[i].ready();
@@ -114,7 +176,7 @@
                         soundCount++;
                     }
                 }
-                //Call the load callback with the current progress
+                // Call the load callback with the current progress
                 if($.gameQuery.resourceManager.loadCallback){
                     var percent = (imageCount+soundCount)/(this.animations.length + this.sounds.length)*100;
                     $.gameQuery.resourceManager.loadCallback(percent);
@@ -124,8 +186,7 @@
                         $.gameQuery.resourceManager.waitForResources();
                     }, 100);
                 } else {
-                    // all the resources are loaded!
-                    // We can associate the animation's images to their corresponding sprites
+                    // All the resources are loaded! We can now associate the animation's images to their corresponding sprites
                     $.gameQuery.scenegraph.children().each(function(){
                         // recursive call on the children:
                         $(this).children().each(arguments.callee);
@@ -143,7 +204,7 @@
                         }
                     });
 
-                    //Launch the refresh loop
+                    // Launch the refresh loop
                     $.gameQuery.resourceManager.running = true;
                     setInterval(function () {
                         $.gameQuery.resourceManager.refresh();
@@ -151,7 +212,7 @@
                     if($.gameQuery.startCallback){
                         $.gameQuery.startCallback();
                     }
-                    //make the scenegraph visible
+                    // Make the scenegraph visible
                     $.gameQuery.scenegraph.css("visibility","visible");
                 }
             },
@@ -160,21 +221,20 @@
              * This function refresh a unique sprite here 'this' represent a dom object
              */
             refreshSprite: function() {
-                //Call this function on all the children:
-                // is 'this' a sprite ?
+                // Check if 'this' is a gameQuery element
                 if(this.gameQuery != undefined){
                     var gameQuery = this.gameQuery;
-                    // does 'this' has an animation ?
+                    // Does 'this' has an animation ?
                     if(gameQuery.animation){
-                        //Do we have anything to do?
+                        // Do we have anything to do?
                         if ( (gameQuery.idleCounter == gameQuery.animation.rate-1) && gameQuery.playing){
 
-                            // does 'this' loops?
+                            // Does 'this' loops?
                             if(gameQuery.animation.type & $.gameQuery.ANIMATION_ONCE){
                                 if(gameQuery.currentFrame < gameQuery.animation.numberOfFrame-1){
                                     gameQuery.currentFrame += gameQuery.frameIncrement;
                                 } else if(gameQuery.currentFrame == gameQuery.animation.numberOfFrame-1) {
-                                    // does 'this' has a callback ?
+                                    // Does 'this' has a callback ?
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
                                         if($.isFunction(gameQuery.callback)){
                                             gameQuery.callback(this);
@@ -192,7 +252,7 @@
 
                                 gameQuery.currentFrame = (gameQuery.currentFrame+gameQuery.frameIncrement)%gameQuery.animation.numberOfFrame;
                                 if(gameQuery.currentFrame == 0){
-                                    // does 'this' has a callback ?
+                                    // Does 'this' has a callback ?
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
                                         if($.isFunction(gameQuery.callback)){
                                             gameQuery.callback(this);
@@ -200,7 +260,7 @@
                                     }
                                 }
                             }
-                            // update the background:
+                            // Update the background
                             if((gameQuery.animation.type & $.gameQuery.ANIMATION_VERTICAL) && (gameQuery.animation.numberOfFrame > 1)){
                                 if(gameQuery.multi){
                                     $(this).css("background-position",""+(-gameQuery.animation.offsetx-gameQuery.multi)+"px "+(-gameQuery.animation.offsety-gameQuery.animation.delta*gameQuery.currentFrame)+"px");
@@ -225,15 +285,14 @@
              * This function refresh a unique tile-map, here 'this' represent a dom object
              */
             refreshTilemap: function() {
-                //Call this function on all the children:
-                // is 'this' a sprite ?
+                // Check if 'this' is a gameQuery element
                 if(this.gameQuery != undefined){
                     var gameQuery = this.gameQuery;
                     if($.isArray(gameQuery.frameTracker)){
                         for(var i=0; i<gameQuery.frameTracker.length; i++){
-                            //Do we have anything to do?
+                            // Do we have anything to do?
                             if(gameQuery.idleCounter[i] == gameQuery.animations[i].rate-1){
-                                // does 'this' loops?
+                                // Does 'this' loops?
                                 if(gameQuery.animations[i].type & $.gameQuery.ANIMATION_ONCE){
                                     if(gameQuery.frameTracker[i] < gameQuery.animations[i].numberOfFrame-1){
                                         gameQuery.frameTracker[i] += gameQuery.frameIncrement[i];
@@ -252,9 +311,9 @@
                             gameQuery.idleCounter[i] = (gameQuery.idleCounter[i]+1)%gameQuery.animations[i].rate;
                         }
                     } else {
-                        //Do we have anything to do?
+                        // Do we have anything to do?
                         if(gameQuery.idleCounter == gameQuery.animations.rate-1){
-                            // does 'this' loops?
+                            // Does 'this' loops?
                             if(gameQuery.animations.type & $.gameQuery.ANIMATION_ONCE){
                                 if(gameQuery.frameTracker < gameQuery.animations.numberOfFrame-1){
                                     gameQuery.frameTracker += gameQuery.frameIncrement;
@@ -274,7 +333,7 @@
                     }
 
 
-                    // update the background of all active tiles:
+                    // Update the background of all active tiles
                     $(this).find(".active").each(function(){
                         if($.isArray(gameQuery.frameTracker)){
                             var animationNumber = this.gameQuery.animationNumber
@@ -306,12 +365,12 @@
                     if(this.callbacks[i].idleCounter == this.callbacks[i].rate-1){
                         var returnedValue = this.callbacks[i].fn();
                         if(typeof returnedValue == 'boolean'){
-                            // if we have a boolean: 'true' means 'no more execution', 'false' means 'execute once more'
+                            // If we have a boolean: 'true' means 'no more execution', 'false' means 'keep on executing'
                             if(returnedValue){
                                 deadCallback.push(i);
                             }
                         } else if(typeof returnedValue == 'number') {
-                            // if we have a number it re-defines the time to the next call
+                            // If we have a number it re-defines the time to the next call
                             this.callbacks[i].rate = Math.round(returnedValue/$.gameQuery.refreshRate);
                             this.callbacks[i].idleCounter = 0;
                         }
@@ -323,6 +382,9 @@
                 }
             },
 
+            /**
+             * Add an animation to the resource Manager 
+             */
             addAnimation: function(animation) {
                 if($.inArray(animation,this.animations)<0){
                     //normalize the animation rate:
@@ -333,14 +395,22 @@
                     this.animations.push(animation);
                 }
             },
-
+            
+            /**
+             * Add a sound to the resource Manager 
+             */
             addSound: function(sound){
                 if($.inArray(sound,this.sounds)<0){
                     this.sounds.push(sound);
                 }
             },
 
-
+            /**
+             * Register a callback
+             * 
+             * @param {function} fn the callback
+             * @param {integer} rate the rate in ms at which the callback should be called (should be a multiple of the playground rate or will be rounded) 
+             */
             registerCallback: function(fn, rate){
                 rate  = Math.round(rate/$.gameQuery.refreshRate);
                 if(rate==0){
@@ -350,7 +420,9 @@
             }
         },
 
-        // This is a single place to update the underlying data of sprites/groups/tiles
+        /**
+         * This is a single place to update the underlying data of sprites/groups/tiles after a position or dimesion modification.
+         */ 
         update: function(descriptor, transformation) {
             // Did we really receive a descriptor or a jQuery object instead?
             if(!$.isPlainObject(descriptor)){
@@ -366,8 +438,7 @@
             // If we couldn't find one we return
             if(!gameQuery) return;
             if(gameQuery.tileSet === true){
-                //then we have a tilemap!
-                // find the tilemap offset relative to the playground:
+                // We have a tilemap, find the tilemap offset relative to the playground
                 var tileSetOffset = {top: gameQuery.posy, left: gameQuery.posx};
                 var parent = descriptor.parent();
                 while(parent[0] !== $.gameQuery.playground[0]) {
@@ -378,35 +449,29 @@
                     parent = $(parent).parent();
                 }
                 
-                // test what kind of transformation we have and react accordingly:
-                // Update the descriptor
+                // Test what kind of transformation we have and react accordingly 
                 for(property in transformation){
                     switch(property){
-                        case "x":
-                            //Do we need to activate/deactivate the first/last column
-                            var left = gameQuery.posx;
-                            
-                            //activates the visible tiles
+                        case "x":                            
+                            // Find the first and last visible column
                             var firstColumn = Math.max(Math.min(Math.floor(-tileSetOffset.left/gameQuery.width), gameQuery.sizex),0);
                             var lastColumn = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].width-tileSetOffset.left)/gameQuery.width), gameQuery.sizex),0);
 
                             for(var i = gameQuery.firstRow; i < gameQuery.lastRow; i++){
-                                // if old first col < new first col
-                                // deactivate the newly invisible tiles
+                                // If old first col < new first col, deactivate the newly invisible tiles
                                 for(var j = gameQuery.firstColumn; j < firstColumn ; j++) {
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
                                 }
-                                //and activate the newly visible tiles
+                                // And activate the newly visible tiles
                                 for(var j = gameQuery.lastColumn; j < lastColumn ; j++) {
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
                                 }
 
-                                // if old first col > new first col
-                                // deactivate the newly invisible tiles
+                                // If old first col > new first col, deactivate the newly invisible tiles
                                 for(var j = lastColumn; j < gameQuery.lastColumn ; j++) {
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
                                 }
-                                //activate the newly visible tiles
+                                // And activate the newly visible tiles
                                 for(var j = firstColumn; j < gameQuery.firstColumn ; j++) {
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
                                 }
@@ -415,31 +480,27 @@
                             gameQuery.firstColumn = firstColumn;
                             gameQuery.lastColumn = lastColumn;
                             break;
+                            
                         case "y":
-                            //Do we need to activate/deactivate the first/last row
-
-                            //actvates the visible tiles
+                            // Find the first and last visible row
                             var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/gameQuery.height), gameQuery.sizey), 0);
                             var lastRow = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].height-tileSetOffset.top)/gameQuery.height), gameQuery.sizey), 0);
 
-
                             for(var j = gameQuery.firstColumn; j < gameQuery.lastColumn ; j++) {
-                                 // if old first row < new first row
-                                // deactivate the newly invisible tiles
+                                // If old first row < new first row, deactivate the newly invisible tiles
                                 for(var i = gameQuery.firstRow; i < firstRow; i++){
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
                                 }
-                                //and activate the newly visible tiles
+                                // And activate the newly visible tiles
                                 for(var i = gameQuery.lastRow; i < lastRow; i++){
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
                                 }
 
-                                // if old first row < new first row
-                                // deactivate the newly invisible tiles
+                                // If old first row < new first row, deactivate the newly invisible tiles
                                 for(var i = lastRow; i < gameQuery.lastRow; i++){
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass("active");
                                 }
-                                //and activate the newly visible tiles
+                                // And activate the newly visible tiles
                                 for(var i = firstRow; i < gameQuery.firstRow; i++){
                                     $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass("active");
                                 }
@@ -449,9 +510,11 @@
                             gameQuery.lastRow = lastRow;
 
                             break;
-                        case "angle": //(in degree)
+                            
+                        case "angle":
                             //TODO
                             break;
+                            
                         case "factor":
                             //TODO
                             break;
@@ -492,69 +555,27 @@
                 }
             }
         },
-
-        /**
-         * Utility function that returns the radius for a geometry
-         *
-         * @param {object} elem DOM element
-         * @param {float} angle the angle in degrees
-         * @return {object} .x, .y radius of geometry
-         */
-        proj: function (elem, angle) {
-            switch (elem.geometry){
-                case $.gameQuery.GEOMETRY_RECTANGLE :
-                    var b = angle*Math.PI*2/360;
-                    var Rx = Math.abs(Math.cos(b)*elem.width/2*elem.factor)+Math.abs(Math.sin(b)*elem.height/2*elem.factor);
-                    var Ry = Math.abs(Math.cos(b)*elem.height/2*elem.factor)+Math.abs(Math.sin(b)*elem.width/2*elem.factor);
-
-                    return {x: Rx, y: Ry};
-            }
-        },
-
-        //Utility function for collision of two objects
-        collide: function(elem1, offset1, elem2, offset2) {
-            // test real collision (only for two rectangles...)
-            if((elem1.geometry == $.gameQuery.GEOMETRY_RECTANGLE && elem2.geometry == $.gameQuery.GEOMETRY_RECTANGLE)){
-
-                var dx = offset2.x + elem2.boundingCircle.x - elem1.boundingCircle.x - offset1.x;
-                var dy = offset2.y + elem2.boundingCircle.y - elem1.boundingCircle.y - offset1.y;
-                var a  = Math.atan(dy/dx);
-
-                var Dx = Math.abs(Math.cos(a-elem1.angle*Math.PI*2/360)/Math.cos(a)*dx);
-                var Dy = Math.abs(Math.sin(a-elem1.angle*Math.PI*2/360)/Math.sin(a)*dy);
-
-                var R = $.gameQuery.proj(elem2, elem2.angle-elem1.angle);
-
-                if((elem1.width/2*elem1.factor+R.x <= Dx) || (elem1.height/2*elem1.factor+R.y <= Dy)) {
-                    return false;
-                } else {
-                    var Dx = Math.abs(Math.cos(a-elem2.angle*Math.PI*2/360)/Math.cos(a)*-dx);
-                    var Dy = Math.abs(Math.sin(a-elem2.angle*Math.PI*2/360)/Math.sin(a)*-dy);
-
-                    var R = $.gameQuery.proj(elem1, elem1.angle-elem2.angle);
-
-                    if((elem2.width/2*elem2.factor+R.x <= Dx) || (elem2.height/2*elem2.factor+R.y <= Dy)) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            } else {
-                return false;
-            }
-        }
-
+        // CSS classes used to mark game element 
+        spriteCssClass: gQprefix + "sprite",
+        groupCssClass:  gQprefix + "group"
     },
 
-    //Mute (or unmute) all the sounds.
+    /** 
+     * Mute (or unmute) all the sounds.
+     */
     muteSound: function(muted){
         for (var i = $.gameQuery.resourceManager.sounds.length-1 ; i >= 0; i --) {
             $.gameQuery.resourceManager.sounds[i].muted(muted);
         }
     },
+    
+    /**
+     * Accessor for the currently defined playground as a jQuery object
+     */
     playground: function() {
         return $.gameQuery.playground
     },
+    
     /**
      * Define a callback called during the loading of the game's resources.
      *
@@ -563,18 +584,21 @@
      */
     loadCallback: function(callback){
         $.gameQuery.resourceManager.loadCallback = callback;
-    }});
+    }
+    }); // end of the extensio of $
 
+
+    // Define the list of object/function accessible through $("selector").
     $.fn.extend({
         /**
-         * Define the div which contains the game and initialize it.
-         * This could be called on any node it doesn't matter.
-         * The returned node is the playground node.
-         * This IS a destructive call
+         * Defines the currently selected div to which contains the game and initialize it.
+         * 
+         * This is a non-destructive call
          */
         playground: function(options) {
             if(this.length == 1){
-                if(this[0] == document){ // Old usage check
+                if(this[0] == document){ 
+                    // Old usage detected, this is not supported anymore
                     throw "Old playground usage, use $.playground() to retreive the playground and $('mydiv').playground(options) to set the div!";
                 }
                 options = $.extend({
@@ -586,7 +610,7 @@
                     mouseTracker: false,
                     disableCollision: false
                 }, options);
-                //We save the playground node and set some variable for this node:
+                // We save the playground node and set some variable for this node:
                 $.gameQuery.playground = this;
                 $.gameQuery.refreshRate = options.refreshRate;
                 $.gameQuery.playground[0].height = options.height;
@@ -604,9 +628,9 @@
 
                 $.gameQuery.scenegraph = $("#scenegraph");
 
-                //Add the keyTracker to the gameQuery object:
+                // Add the keyTracker to the gameQuery object:
                 $.gameQuery.keyTracker = {};
-                // we only enable the real tracking if the users wants it
+                // We only enable the real tracking if the users wants it
                 if(options.keyTracker){
                     $(document).keydown(function(event){
                         $.gameQuery.keyTracker[event.keyCode] = true;
@@ -615,12 +639,12 @@
                         $.gameQuery.keyTracker[event.keyCode] = false;
                     });
                 }
-                //Add the mouseTracker to the gameQuery object:
+                
+                // Add the mouseTracker to the gameQuery object:
                  $.gameQuery.mouseTracker = {
                     x: 0,
                     y: 0};
-                // we only enable the real tracking if the users wants it
-                //$.gameQuery.playground
+                // We only enable the real tracking if the users wants it
                 var scenegraphOffset = $.gameQuery.playground.offset();
                 if(options.mouseTracker){
                     $($.gameQuery.playground).mousemove(function(event){
@@ -639,26 +663,26 @@
         },
 
         /**
-        * Starts the game.
-        *
-        * Resources from the resource manager are preloaded if necesary
-        * Works only for the playground node.
-        * This is a non-destructive call
-        */
+         * Starts the game.
+         *
+         * Resources from the resource manager are preloaded if necesary
+         * Works only for the playground node.
+         *
+         * This is a non-destructive call
+         */
         startGame: function(callback) {
-            //if the element is the playground we start the game:
+            // If the element is the playground we start the game:
             $.gameQuery.startCallback = callback;
             $.gameQuery.resourceManager.preload();
             return this;
         },
 
         /**
-        * Add a group to the scene graph
-        *
-        * Works only on the scenegraph root or on another group
-        * This IS a destructive call and should be terminated with end()
-        * to go back one level up in the chaining
-        */
+         * Add a group to the scene graph. Works only on the scenegraph root or on another group
+         *
+         * This IS a destructive call and should be terminated with end()
+         * to go back one level up in the chaining
+         */
         addGroup: function(group, options) {
             options = $.extend({
                 width:        32,
@@ -693,10 +717,10 @@
         },
 
         /**
-        * Add a sprite to the current node.
-        * Works only on the playground, the scenegraph root or a scenegraph group
-        * This is a non-destructive call
-        */
+         * Add a sprite to the current node. Works only on the playground or any of its sub-nodes 
+         * 
+         * This is a non-destructive call
+         */
         addSprite: function(sprite, options) {
             options = $.extend({
                 width:            32,
@@ -724,9 +748,9 @@
                 this.append(newSpriteElem);
             }
 
-            //if the game has already started we want to add the animation's image as a background now:
+            // If the game has already started we want to add the animation's image as a background now
             if(options.animation){
-                // the second test is a fix for default background    (https://github.com/onaluf/gameQuery/issues/3)
+                // The second test is a fix for default background    (https://github.com/onaluf/gameQuery/issues/3)
                 if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
                     $("#"+sprite).css("background-image", "url("+options.animation.imageURL+")");
                 }
@@ -743,7 +767,7 @@
             var spriteDOMObject = $("#"+sprite)[0];
             if(spriteDOMObject != undefined){
                 spriteDOMObject.gameQuery = options;
-                //Compute bounding Circle:
+                // Compute bounding Circle
                 spriteDOMObject.gameQuery.boundingCircle = {x: options.posx + options.width/2,
                                                             y: options.posy + options.height/2,
                                                             originalRadius: Math.sqrt(Math.pow(options.width,2) + Math.pow(options.height,2))/2};
@@ -753,21 +777,10 @@
         },
 
         /**
-        * Remove the sprite on which it is called.
-        *
-        * This is here for backward compatibility  but it doesn't do anything
-        * more than simply call .remove()
-        * This is a non-destructive call.
-        */
-        removeSprite: function() {
-            this.remove();
-            return this;
-        },
-
-        /**
-        * Add a Tile Map to the selected element.
-        * This is a non-destructive call.
-        */
+         * Add a Tile Map to the selected element.
+         *
+         * This is a non-destructive call. The added sprite is NOT selected after a call to this function!
+         */
         addTilemap: function(name, tileDescription, animationList, options){
             options = $.extend({
                 width:            32,
@@ -820,7 +833,7 @@
                     for(var j=0; j<options.sizex; j++){
                         if(tileDescription(i,j) != 0){
                             if($.isArray(animationList)){
-                                // for many simple animation:
+                                // For many simple animation
                                 tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
                                                       {width: options.width,
                                                        height: options.height,
@@ -832,7 +845,7 @@
                                 newTile.addClass("tileType_"+(tileDescription(i,j)-1));
                                 newTile[0].gameQuery.animationNumber = tileDescription(i,j)-1;
                             } else {
-                                // for multi-animation:
+                                // For multi-animation
                                 tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
                                                       {width: options.width,
                                                        height: options.height,
@@ -852,7 +865,7 @@
                     for(var j=0; j<tileDescription[0].length; j++){
                         if(tileDescription[i][j] != 0){
                             if($.isArray(animationList)){
-                                // for many simple animation:
+                                // For many simple animation
                                 tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
                                                       {width: options.width,
                                                        height: options.height,
@@ -864,7 +877,7 @@
                                 newTile.addClass("tileType_"+(tileDescription[i][j]-1));
                                 newTile[0].gameQuery.animationNumber = tileDescription[i][j]-1;
                             } else {
-                                // for multi-animation:
+                                // For multi-animation
                                 tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
                                                       {width: options.width,
                                                        height: options.height,
@@ -881,7 +894,7 @@
                     }
                 }
             }
-            //Get the tileSet offset (relative to the playground)
+            // Get the tileSet offset (relative to the playground)
             var tileSetOffset = {top: options.posy, left: options.posx};
             var parent = this;
             while(parent[0] !== $.gameQuery.playground[0]) {
@@ -891,11 +904,8 @@
                 }
                 parent = $(parent).parent();
             }
-            //var playgroundOffset = $.gameQuery.playground.offset();
-            //var tileSetOffset = tileSet.offset();
-            //tileSetOffset = {top: tileSetOffset.top - playgroundOffset.top, left: tileSetOffset.left - playgroundOffset.left};
-
-            //activates the visible tiles
+            
+            // Activate the visible tiles
             var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/options.height), options.sizey), 0);
             var lastRow = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].height-tileSetOffset.top)/options.height), options.sizey), 0);
             var firstColumn = Math.max(Math.min(Math.floor(-tileSetOffset.left/options.width), options.sizex), 0);
@@ -916,6 +926,8 @@
 
         /**
          * Stop the animation at the current frame
+         * 
+         * This is a non-destructive call.
          */
         pauseAnimation: function() {
             this[0].gameQuery.playing = false;
@@ -924,6 +936,8 @@
 
         /**
          * Resume the animation (if paused)
+         * 
+         * This is a non-destructive call.
          */
         resumeAnimation: function() {
             this[0].gameQuery.playing = true;
@@ -931,11 +945,12 @@
         },
 
         /**
-        * Changes the animation associated with a sprite.
-        *
-        * WARNING: no checks are made to ensure that the object is really a sprite
-        * This is a non-destructive call
-        */
+         * Changes the animation associated with a sprite.
+         *
+         * WARNING: no checks are made to ensure that the object is really a sprite
+         *
+         * This is a non-destructive call.
+         */
         setAnimation: function(animation, callback) {
             var gameQuery = this[0].gameQuery;
             if(typeof animation == "number"){
@@ -980,13 +995,13 @@
         },
 
         /**
-        * Register a callback funnction
-        *
-        * This is a non-destructive call
-        *
-        * @param {Function} fn the callback function.
-        * @param {Number} rate time in milliseconds between calls.
-        */
+         * Register a callback funnction
+         *
+         * This is a non-destructive call
+         *
+         * @param {Function} fn the callback function.
+         * @param {Number} rate time in milliseconds between calls.
+         */
         registerCallback: function(fn, rate) {
             $.gameQuery.resourceManager.registerCallback(fn, rate);
             return this;
@@ -995,13 +1010,9 @@
         /**
          * Retrieve a list of objects in collision with the subject.
          *
-         * if 'this' is a sprite or a group, the function will retrieve the list
-         * of sprites (not groups) that touch it. If 'this' is the playground,
-         * the function will return a list of all pair of collisioning elements.
-         * They are represented by a jQuery object containing a series of pairs.
-         * Each pair represents two objects colliding.(not yet implemented)
-         * For now all abject are considered to be boxes.
-         * This IS a destructive call and should be terminated with end() to go back one level up in the chaining
+         * If 'this' is a sprite or a group, the function will retrieve the list of sprites (not groups!!!) that touch it. For now all abject are considered to be boxes.
+         *
+         * This IS a destructive call and should be terminated with end() to go back one level up in the chaining.
          */
         collision: function(arg1, arg2){
             var filter, override;
@@ -1018,7 +1029,7 @@
             
             var resultList = [];
 
-            //retrieve 'this' offset by looking at the parents
+            // Retrieve 'this' offset by looking at the parents
             var itsParent = this[0].parentNode, offsetX = 0, offsetY = 0;
             while (itsParent != $.gameQuery.playground[0]){
                     if(itsParent.gameQuery){
@@ -1028,13 +1039,13 @@
                 itsParent = itsParent.parentNode;
             }
 
-            // retrieve the playground's absolute position and size information
+            // Retrieve the playground's absolute position and size information
             var pgdGeom = {top: 0, left: 0, bottom: $.playground().height(), right: $.playground().width()};
 
-            // retrieve the gameQuery object and correct it with the override
+            // Retrieve the gameQuery object and correct it with the override
             var gameQuery = jQuery.extend(true, {}, this[0].gameQuery);
 
-            // retrieve the BoundingCircle and correct it with the override
+            // Retrieve the BoundingCircle and correct it with the override
             var boundingCircle = jQuery.extend(true, {}, gameQuery.boundingCircle);
             if(override && override.w){
                 gameQuery.width = override.w;
@@ -1063,10 +1074,8 @@
                 return this.pushStack(new $([]));
             }
 
-            if(this == $.gameQuery.playground){
-                //TODO Code the "all against all" collision detection and find a nice way to return a list of pairs of elements
-            } else {
-                // we must find all the elements that touche 'this'
+            if(this !== $.gameQuery.playground){
+                // We must find all the elements that touche 'this'
                 var elementsToCheck = new Array();
                 elementsToCheck.push($.gameQuery.scenegraph.children(filter).get());
                 elementsToCheck[0].offsetX = 0;
@@ -1076,19 +1085,18 @@
                     var subLen = elementsToCheck[i].length;
                     while(subLen--){
                         var elementToCheck = elementsToCheck[i][subLen];
-                        // is it a gameQuery generated element?
+                        // Is it a gameQuery generated element?
                         if(elementToCheck.gameQuery){
-                            // we don't want to check groups
+                            // We don't want to check groups
                             if(!elementToCheck.gameQuery.group && !elementToCheck.gameQuery.tileSet){
-                                // does it touche the selection?
+                                // Does it touche the selection?
                                 if(this[0]!=elementToCheck){
-                                    // check bounding circle collision
-                                    // 1) distance between center:
+                                    // Check bounding circle collision
                                     var distance = Math.sqrt(Math.pow(offsetY + gameQuery.boundingCircle.y - elementsToCheck[i].offsetY - elementToCheck.gameQuery.boundingCircle.y, 2) + Math.pow(offsetX + gameQuery.boundingCircle.x - elementsToCheck[i].offsetX - elementToCheck.gameQuery.boundingCircle.x, 2));
                                     if(distance - gameQuery.boundingCircle.radius - elementToCheck.gameQuery.boundingCircle.radius <= 0){
-                                        // check real collision
-                                        if($.gameQuery.collide(gameQuery, {x: offsetX, y: offsetY}, elementToCheck.gameQuery, {x: elementsToCheck[i].offsetX, y: elementsToCheck[i].offsetY})) {
-                                            // add to the result list if collision detected
+                                        // Check real collision
+                                        if(collide(gameQuery, {x: offsetX, y: offsetY}, elementToCheck.gameQuery, {x: elementsToCheck[i].offsetX, y: elementsToCheck[i].offsetY})) {
+                                            // Add to the result list if collision detected
                                             resultList.push(elementsToCheck[i][subLen]);
                                         }
                                     }
@@ -1113,29 +1121,29 @@
 /** --          Sound related functions           ------------------------------------------------------------------------------------------------------------------ **/
 /** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
 
-
         /**
-        * Adds the sound to the resourceManager for later use and
-        * associates it to the selected dom element(s).
-        * This is a non-destructive call
-        */
+         * Add the sound to the resourceManager for later use and
+         * associates it to the selected dom element(s).
+         * 
+         * This is a non-destructive call
+         */
         addSound: function(sound, add) {
             // Does a SoundWrapper exist?
             if($.gameQuery.SoundWrapper) {
                 var gameQuery = this[0].gameQuery;
-                // should we add to existing sounds?
+                // Should we add to existing sounds?
                 if(add) {
                     // Do we have some sound associated with 'this'?
                     var sounds = gameQuery.sounds;
                     if(sounds) {
-                        // yes, we add it
+                        // Yes, we add it
                         sounds.push(sound);
                     } else {
-                        // no, we create a new sound array
+                        // No, we create a new sound array
                         gameQuery.sounds = [sound];
                     }
                 } else {
-                    // no, we replace all sounds with this one
+                    // No, we replace all sounds with this one
                     gameQuery.sounds = [sound];
                 }
             }
@@ -1143,9 +1151,10 @@
         },
 
         /**
-        * Plays the sound(s) associated with the selected dom element(s)
-        * This is a non-destructive call
-        */
+         * Play the sound(s) associated with the selected dom element(s).
+         * 
+         * This is a non-destructive call.
+         */
         playSound: function() {
             $(this).each(function(){
                 var gameQuery = this.gameQuery;
@@ -1160,9 +1169,10 @@
         },
 
         /**
-        * Stops the sound(s) associated with the selected dom element(s) and rewinds them
-        * This is a non-destructive call
-        */
+         * Stops the sound(s) associated with the selected dom element(s) and rewinds them.
+         * 
+         * This is a non-destructive call.
+         */
         stopSound: function() {
             $(this).each(function(){
                 var gameQuery = this.gameQuery;
@@ -1175,10 +1185,13 @@
             return this;
         },
 
+
         /**
-        * Pauses the sound(s) associated with the selected dom element(s)
-        * This is a non-destructive call
-        */
+         * Pauses the sound(s) associated with the selected dom element(s).
+         * 
+         * This is a non-destructive call.
+         */
+
         pauseSound: function() {
             $(this).each(function(){
                 var gameQuery = this.gameQuery;
@@ -1191,9 +1204,13 @@
             return this;
         },
 
+
         /**
-        * Mute or unmute the selected sound or all the sounds if none is specified
-        */
+         * Mute or unmute the selected sound or all the sounds if none is specified.
+         * 
+         * This is a non-destructive call.
+         */
+
         muteSound: function(muted) {
             $(this).each(function(){
                 var gameQuery = this.gameQuery;
@@ -1203,6 +1220,7 @@
                     }
                 }
             });
+            return this;
         },
 
 
@@ -1211,9 +1229,11 @@
 /** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/
 
         /**
-         * Internal function doing the combined actions of rotate and scale
-         * Both arguments are mandatory. To get the values back use .rotate() or
-         * .scale()
+         * Internal function doing the combined actions of rotate and scale. 
+         * 
+         * Please use .rotate() or .scale() instead since they are part of the supported API!
+         * 
+         * This is a non-destructive call.
          */
         transform: function(angle, factor) {
             var gameQuery = this[0].gameQuery;
@@ -1254,9 +1274,11 @@
         },
 
         /**
-         * Rotates the element(s) clock-wise.
+         * Rotate the element(s) clock-wise.
          *
          * @param {Number} angle the angle in degrees
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current rotation angle!
          */
         rotate: function(angle){
             var gameQuery = this[0].gameQuery;
@@ -1270,9 +1292,11 @@
         },
 
         /**
-         * Changes the scale of the selected element(s). The passed argument is a ratio:
+         * Change the scale of the selected element(s). The passed argument is a ratio:
          *
          * @param {Number} factor a ratio: 1.0 = original size, 0.5 = half the original size etc.
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current scale factor!
          */
         scale: function(factor){
             var gameQuery = this[0].gameQuery;
@@ -1287,6 +1311,8 @@
 
         /**
          * Flips the element(s) horizontally.
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current horizontal flipping status!
          */
         fliph: function(flip){
             var gameQuery = this[0].gameQuery;
@@ -1304,6 +1330,8 @@
 
         /**
          * Flips the element(s) vertically.
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current vertical flipping status!
          */
         flipv: function(flip){
             var gameQuery = this[0].gameQuery;
@@ -1332,6 +1360,8 @@
          * object {x,y,z}
          *
          * Please note that the z coordinate is just the z-index.
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call.
          */
         xyz: function(x, y, z, relative) {
              if (x === undefined) {
@@ -1345,6 +1375,8 @@
          * The following functions are all all shortcuts for the .xyz(...) function.
          *
          * @see xyz for detailed documentation.
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call.
          */
         x: function(value, relative) {
              if (value === undefined) {
@@ -1387,6 +1419,8 @@
          * If no argument is specified then the functions act as a getter and
          *
          * return an object {w,h}
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call.
          */
         wh: function(w, h, relative) {
             if (w === undefined) {
@@ -1400,6 +1434,8 @@
          * The following functions are all all shortcuts for the .wh(...) function.
          *
          * @see wh for detailed documentation.
+         * 
+         * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call.
          */
         w: function(value, relative) {
             if (value === undefined) {
@@ -1504,6 +1540,8 @@
             $.gameQuery.update(this, option);
             return this;
         }
-    });
+    }); // end of the extensio of $.fn
 
+    // alias gameQuery to gQ for easier access
+    $.extend({ gQ: $.gameQuery}); 
 })(jQuery);
