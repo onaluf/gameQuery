@@ -844,7 +844,6 @@
                                                        animation: animationList[tileDescription(i,j)-1]});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.removeClass($.gameQuery.activeCssClass);
                                 newTile.addClass(gQprefix+"tileType_"+(tileDescription(i,j)-1));
                                 newTile[0].gameQuery.animationNumber = tileDescription(i,j)-1;
                             } else {
@@ -858,7 +857,6 @@
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.setAnimation(tileDescription(i,j)-1);
                                 newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.removeClass($.gameQuery.activeCssClass);
                                 newTile.addClass(gQprefix+"tileType_"+(tileDescription(i,j)-1));
                             }
                         }
@@ -878,7 +876,6 @@
                                                        animation: animationList[tileDescription[i][j]-1]});
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.removeClass($.gameQuery.activeCssClass);
                                 newTile.addClass(gQprefix+"tileType_"+(tileDescription[i][j]-1));
                                 newTile[0].gameQuery.animationNumber = tileDescription[i][j]-1;
                             } else {
@@ -892,7 +889,6 @@
                                 var newTile = $("#tile_"+name+"_"+i+"_"+j);
                                 newTile.setAnimation(tileDescription[i][j]-1);
                                 newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.removeClass($.gameQuery.activeCssClass);
                                 newTile.addClass(gQprefix+"tileType_"+(tileDescription[i][j]-1));
                             }
                         }
