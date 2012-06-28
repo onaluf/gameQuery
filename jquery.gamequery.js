@@ -70,6 +70,113 @@
         }
     };
     
+    /** 
+     * Utility function computes the offset relative to the playground of a gameQuery element without using DOM's position.
+     * This should be faster than the standand .offset() function.
+     * 
+     * Warning: No non-gameQuery elements should be present between this element and the playground div!
+     * 
+     * @param {jQuery} element the jQuery wrapped DOM element representing the gameQuery object.
+     * @returns {object} an object {x:, y: } containing the x and y offset. (Not top and left like jQuery's .offset())  
+     */
+    var offset = function(element) {
+        // Get the tileSet offset (relative to the playground)
+        var offset = {x: 0, y: 0};
+        var parent = element[0];
+        
+        while(parent !== $.gameQuery.playground[0] && parent.gameQuery !== undefined) {
+            offset.x += parent.gameQuery.posx;
+            offset.y += parent.gameQuery.posy;
+            parent = parent.parentNode;
+        }
+        
+        return offset
+    }
+    
+    /**
+     * Utility function computes the index range of the tiles for a tilemap.
+     * 
+     * @param {jQuery} element the jQuery wrapped DOM element representing the tilemap.
+     * @param {object} offset an object holding the x and y offset of the tilemap, this is optional and will be computed if not provided.
+     * @returns {object} an object {firstColumn: , lastColumn: , fristRow: , lastRow: } 
+     */
+    var visibleTilemapIndexes = function (element, elementOffset) {
+        if (elementOffset === undefined) {
+            elementOffset = offset(element);   
+        }
+        
+        var gameQuery = element[0].gameQuery;
+        // Activate the visible tiles
+        return {
+            firstRow:    Math.max(Math.min(Math.floor(-elementOffset.y/gameQuery.height), gameQuery.sizey), 0),
+            lastRow:     Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].height-elementOffset.y)/gameQuery.height), gameQuery.sizey), 0),
+            firstColumn: Math.max(Math.min(Math.floor(-elementOffset.x/gameQuery.width), gameQuery.sizex), 0),
+            lastColumn:  Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].width-elementOffset.x)/gameQuery.width), gameQuery.sizex), 0) 
+        }
+    }
+    
+    /**
+     * Utility function thast computes the buffered zone of a tilemap
+     * 
+     * @param {jQuery} element the jQuery wrapped DOM element representing the tilemap.
+     * @param {object} visible an object describing the visible zone
+     * @returns {object} an object {firstColumn: , lastColumn: , fristRow: , lastRow: }
+     */
+    var bufferedTilemapIndexes = function (element, visible) {
+        var gameQuery = element[0].gameQuery;
+        
+        return {
+            firstRow:    Math.max(Math.min(visible.firstRow - gameQuery.buffer, gameQuery.sizey), 0),
+            lastRow:     Math.max(Math.min(visible.lastRow + gameQuery.buffer, gameQuery.sizey), 0),
+            firstColumn: Math.max(Math.min(visible.firstColumn - gameQuery.buffer, gameQuery.sizex), 0),
+            lastColumn:  Math.max(Math.min(visible.lastColumn + gameQuery.buffer, gameQuery.sizex), 0) 
+        }
+    }
+    
+    /**
+     * Utility function that creates a tile in the given tilemap
+     * 
+     * @param {jQuery} tileSet the jQuery element representing the tile map
+     * @param {integer} row the row index of the tile in the tile map
+     * @param {integer} column the column index of the tile in the tile map
+     */
+    var addTile = function(tileSet, row, column) {
+        var gameQuery = tileSet[0].gameQuery;
+        var name = tileSet.attr("id");
+        
+        var tileDescription;
+        if(gameQuery.func) {
+            tileDescription = gameQuery.tiles(row,column)-1;
+        } else {
+            tileDescription = gameQuery.tiles[row][column]-1;
+        }
+        
+        var animation;
+        if(gameQuery.multi) {
+            animation = gameQuery.animations;
+        } else {
+            animation = gameQuery.animations[tileDescription];
+        }
+        
+        if(tileDescription >= 0){
+            tileSet.addSprite($.gameQuery.tileIdPrefix+name+"_"+row+"_"+column,
+                                  {width: gameQuery.width,
+                                   height: gameQuery.height,
+                                   posx: column*gameQuery.width,
+                                   posy: row*gameQuery.height,
+                                   animation: animation});
+                                   
+            var newTile = tileSet.find("#"+$.gameQuery.tileIdPrefix+name+"_"+row+"_"+column);
+            if (gameQuery.multi) {
+                newTile.setAnimation(tileDescription);
+            } else {
+                newTile[0].gameQuery.animationNumber = tileDescription;
+            }
+            newTile.removeClass($.gameQuery.spriteCssClass);
+            newTile.addClass($.gameQuery.tileCssClass);
+            newTile.addClass($.gameQuery.tileTypePrefix+tileDescription);
+        }
+    }
     
     // Define the list of object/function accessible through $.
     $.extend({ gameQuery: {
@@ -334,7 +441,7 @@
 
 
                     // Update the background of all active tiles
-                    $(this).find("."+$.gameQuery.activeCssClass).each(function(){
+                    $(this).find("."+$.gameQuery.tileCssClass).each(function(){
                         if($.isArray(gameQuery.frameTracker)){
                             var animationNumber = this.gameQuery.animationNumber
                             if((gameQuery.animations[animationNumber].type & $.gameQuery.ANIMATION_VERTICAL) && (gameQuery.animations[animationNumber].numberOfFrame > 1)){
@@ -438,77 +545,120 @@
             // If we couldn't find one we return
             if(!gameQuery) return;
             if(gameQuery.tileSet === true){
-                // We have a tilemap, find the tilemap offset relative to the playground
-                var tileSetOffset = {top: gameQuery.posy, left: gameQuery.posx};
-                var parent = descriptor.parent();
-                while(parent[0] !== $.gameQuery.playground[0]) {
-                    if (parent[0].gameQuery !== undefined) {
-                        tileSetOffset.left += parent[0].gameQuery.posx;
-                        tileSetOffset.top += parent[0].gameQuery.posy;
-                    }
-                    parent = $(parent).parent();
-                }
+                // We have a tilemap 
+                
+                var visible = visibleTilemapIndexes(descriptor);
+                var buffered = gameQuery.buffered;
                 
                 // Test what kind of transformation we have and react accordingly 
                 for(property in transformation){
                     switch(property){
-                        case "x":                            
-                            // Find the first and last visible column
-                            var firstColumn = Math.max(Math.min(Math.floor(-tileSetOffset.left/gameQuery.width), gameQuery.sizex),0);
-                            var lastColumn = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].width-tileSetOffset.left)/gameQuery.width), gameQuery.sizex),0);
-
-                            for(var i = gameQuery.firstRow; i < gameQuery.lastRow; i++){
-                                // If old first col < new first col, deactivate the newly invisible tiles
-                                for(var j = gameQuery.firstColumn; j < firstColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
+                        case "x":
+                        
+                            if(visible.lastColumn > buffered.lastColumn) {
+                                
+                                // Detach the tilemap
+                                var parent = descriptor[0].parentNode;
+                                var tilemap = descriptor.detach();
+                                
+                                var newBuffered = bufferedTilemapIndexes(descriptor, visible);
+                                for(var i = gameQuery.buffered.firstRow; i < gameQuery.buffered.lastRow; i++){
+                                    // Remove the newly invisible tiles
+                                    for(var j = gameQuery.buffered.firstColumn; j < Math.min(newBuffered.firstColumn, gameQuery.buffered.lastColumn); j++) {
+                                        tilemap.find("#"+$.gameQuery.tileIdPrefix+descriptor.attr("id")+"_"+i+"_"+j).remove();
+                                    }
+                                    // And add the newly visible tiles
+                                    for(var j = Math.max(gameQuery.buffered.lastColumn,newBuffered.firstColumn); j < newBuffered.lastColumn ; j++) {
+                                        addTile(tilemap,i,j);
+                                    }
                                 }
-                                // And activate the newly visible tiles
-                                for(var j = gameQuery.lastColumn; j < lastColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
-                                }
-
-                                // If old first col > new first col, deactivate the newly invisible tiles
-                                for(var j = lastColumn; j < gameQuery.lastColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
-                                }
-                                // And activate the newly visible tiles
-                                for(var j = firstColumn; j < gameQuery.firstColumn ; j++) {
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
-                                }
+                                
+                                gameQuery.buffered.firstColumn = newBuffered.firstColumn;
+                                gameQuery.buffered.lastColumn  = newBuffered.lastColumn;
+                                
+                                // Attach the tilemap back
+                                tilemap.appendTo(parent);
+                                
                             }
-
-                            gameQuery.firstColumn = firstColumn;
-                            gameQuery.lastColumn = lastColumn;
+                            
+                            if(visible.firstColumn < buffered.firstColumn) {
+                                
+                                // Detach the tilemap
+                                var parent = descriptor[0].parentNode;
+                                var tilemap = descriptor.detach();
+                                    
+                                var newBuffered = bufferedTilemapIndexes(descriptor, visible);
+                                for(var i = gameQuery.buffered.firstRow; i < gameQuery.buffered.lastRow; i++){
+                                    // Remove the newly invisible tiles
+                                    for(var j = Math.max(newBuffered.lastColumn,gameQuery.buffered.firstColumn); j < gameQuery.buffered.lastColumn ; j++) {
+                                        tilemap.find("#"+$.gameQuery.tileIdPrefix+descriptor.attr("id")+"_"+i+"_"+j).remove();
+                                    }
+                                    // And add the newly visible tiles
+                                    for(var j = newBuffered.firstColumn; j < Math.min(gameQuery.buffered.firstColumn,newBuffered.lastColumn); j++) {
+                                        addTile(tilemap,i,j);
+                                    }
+                                }
+                                
+                                gameQuery.buffered.firstColumn = newBuffered.firstColumn;
+                                gameQuery.buffered.lastColumn  = newBuffered.lastColumn;
+                                
+                                // Attach the tilemap back
+                                tilemap.appendTo(parent);
+                            }
                             break;
                             
                         case "y":
-                            // Find the first and last visible row
-                            var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/gameQuery.height), gameQuery.sizey), 0);
-                            var lastRow = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].height-tileSetOffset.top)/gameQuery.height), gameQuery.sizey), 0);
-
-                            for(var j = gameQuery.firstColumn; j < gameQuery.lastColumn ; j++) {
-                                // If old first row < new first row, deactivate the newly invisible tiles
-                                for(var i = gameQuery.firstRow; i < firstRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
+                        
+                            if(visible.lastRow > buffered.lastRow) {
+                                
+                                // Detach the tilemap
+                                var parent = descriptor[0].parentNode;
+                                var tilemap = descriptor.detach();
+                                
+                                var newBuffered = bufferedTilemapIndexes(descriptor, visible);
+                                for(var j = gameQuery.buffered.firstColumn; j < gameQuery.buffered.lastColumn ; j++) {
+                                    // Remove the newly invisible tiles
+                                    for(var i = gameQuery.buffered.firstRow; i < Math.min(newBuffered.firstRow, gameQuery.buffered.lastRow); i++){
+                                        tilemap.find("#"+$.gameQuery.tileIdPrefix+descriptor.attr("id")+"_"+i+"_"+j).remove();
+                                    }
+                                    // And add the newly visible tiles
+                                    for(var i = Math.max(gameQuery.buffered.lastRow, newBuffered.firstRow); i < newBuffered.lastRow; i++){
+                                        addTile(tilemap,i,j);
+                                    }
                                 }
-                                // And activate the newly visible tiles
-                                for(var i = gameQuery.lastRow; i < lastRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
+                                
+                                gameQuery.buffered.firstRow = newBuffered.firstRow;
+                                gameQuery.buffered.lastRow  = newBuffered.lastRow;
+                                
+                                // Attach the tilemap back
+                                tilemap.appendTo(parent);
+                                
+                            }  
+                            
+                            if(visible.firstRow < buffered.firstRow) {
+                                
+                                // Detach the tilemap
+                                var parent = descriptor[0].parentNode;
+                                var tilemap = descriptor.detach();
+                                
+                                var newBuffered = bufferedTilemapIndexes(descriptor, visible);
+                                for(var j = gameQuery.buffered.firstColumn; j < gameQuery.buffered.lastColumn ; j++) {
+                                    // Remove the newly invisible tiles
+                                    for(var i = Math.max(newBuffered.lastRow, gameQuery.buffered.firstRow); i < gameQuery.buffered.lastRow; i++){
+                                        tilemap.find("#"+$.gameQuery.tileIdPrefix+descriptor.attr("id")+"_"+i+"_"+j).remove();
+                                    }
+                                    // And add the newly visible tiles
+                                    for(var i = newBuffered.firstRow; i < Math.min(gameQuery.buffered.firstRow, newBuffered.lastRow); i++){
+                                        addTile(tilemap,i,j);
+                                    }
                                 }
-
-                                // If old first row < new first row, deactivate the newly invisible tiles
-                                for(var i = lastRow; i < gameQuery.lastRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).removeClass($.gameQuery.activeCssClass);
-                                }
-                                // And activate the newly visible tiles
-                                for(var i = firstRow; i < gameQuery.firstRow; i++){
-                                    $("#tile_"+descriptor.attr("id")+"_"+i+"_"+j).addClass($.gameQuery.activeCssClass);
-                                }
+                                
+                                gameQuery.buffered.firstRow = newBuffered.firstRow;
+                                gameQuery.buffered.lastRow  = newBuffered.lastRow;
+                                
+                                // Attach the tilemap back
+                                tilemap.appendTo(parent);
                             }
-
-                            gameQuery.firstRow = firstRow;
-                            gameQuery.lastRow = lastRow;
-
                             break;
                             
                         case "angle":
@@ -559,7 +709,10 @@
         spriteCssClass:  gQprefix + "sprite",
         groupCssClass:   gQprefix + "group",
         tilemapCssClass: gQprefix + "tilemap",
-        activeCssClass:  gQprefix + "active"
+        tileCssClass:    gQprefix + "tile",
+        // Prefix for CSS Ids or Classes
+        tileTypePrefix:  gQprefix + "tileType_",
+        tileIdPrefix:    gQprefix + "tile_"
     },
 
     /** 
@@ -588,6 +741,12 @@
         $.gameQuery.resourceManager.loadCallback = callback;
     }
     }); // end of the extensio of $
+
+
+    // fragments used to create DOM element
+    var spriteFragment  = $("<div class='"+$.gameQuery.spriteCssClass+"'  style='position: absolute; display: block; overflow: hidden' />");
+    var groupFragment   = $("<div class='"+$.gameQuery.groupCssClass+"'  style='position: absolute; display: block; overflow: hidden' />");
+    var tilemapFragment = $("<div class='"+$.gameQuery.tilemapCssClass+"' style='position: absolute; display: block; overflow: hidden;' />");
 
 
     // Define the list of object/function accessible through $("selector").
@@ -702,20 +861,26 @@
                 factorv:    1
             }, options);
 
-            var newGroupElement = "<div id='"+group+"' class='"+$.gameQuery.groupCssClass+"' style='position: absolute; display: block; overflow: "+options.overflow+"; top: "+options.posy+"px; left: "+options.posx+"px; height: "+options.height+"px; width: "+options.width+"px;' />";
+            var newGroupElement = groupFragment.clone().attr("id",group).css({
+                    overflow: options.overflow,
+                    top:      options.posy,
+                    left:     options.posx,
+                    height:   options.height,
+                    width:    options.width
+                });
+            
             if(this == $.gameQuery.playground){
                 $.gameQuery.scenegraph.append(newGroupElement);
             } else if ((this == $.gameQuery.scenegraph)||(this.hasClass($.gameQuery.groupCssClass))){
                 this.append(newGroupElement);
             }
-            var newGroup = $("#"+group);
-            newGroup[0].gameQuery = options;
-            newGroup[0].gameQuery.boundingCircle = {x: options.posx + options.width/2,
+            newGroupElement[0].gameQuery = options;
+            newGroupElement[0].gameQuery.boundingCircle = {x: options.posx + options.width/2,
                                                     y: options.posy + options.height/0,
                                                     originalRadius: Math.sqrt(Math.pow(options.width,2) + Math.pow(options.height,2))/2};
-            newGroup[0].gameQuery.boundingCircle.radius = newGroup[0].gameQuery.boundingCircle.originalRadius;
-            newGroup[0].gameQuery.group = true;
-            return this.pushStack(newGroup);
+            newGroupElement[0].gameQuery.boundingCircle.radius = newGroupElement[0].gameQuery.boundingCircle.originalRadius;
+            newGroupElement[0].gameQuery.group = true;
+            return this.pushStack(newGroupElement);
         },
 
         /**
@@ -743,7 +908,14 @@
                 factorv:        1
             }, options);
 
-            var newSpriteElem = "<div id='"+sprite+"' class='"+$.gameQuery.spriteCssClass+"' style='position: absolute; display: block; overflow: hidden; height: "+options.height+"px; width: "+options.width+"px; left: "+options.posx+"px; top: "+options.posy+"px; background-position: "+((options.animation)? -options.animation.offsetx : 0)+"px "+((options.animation)? -options.animation.offsety : 0)+"px;' />";
+            var newSpriteElem = spriteFragment.clone().attr("id",sprite).css({
+                     height: options.height,
+                     width: options.width,
+                     left: options.posx,
+                     top: options.posy,
+                     backgroundPosition: ((options.animation)? -options.animation.offsetx : 0)+"px "+((options.animation)? -options.animation.offsety : 0)+"px"
+                });
+                
             if(this == $.gameQuery.playground){
                 $.gameQuery.scenegraph.append(newSpriteElem);
             } else {
@@ -754,19 +926,19 @@
             if(options.animation){
                 // The second test is a fix for default background    (https://github.com/onaluf/gameQuery/issues/3)
                 if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
-                    $("#"+sprite).css("background-image", "url("+options.animation.imageURL+")");
+                    newSpriteElem.css("background-image", "url("+options.animation.imageURL+")");
                 }
                 if(options.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
-                    $("#"+sprite).css("background-repeat", "repeat-x");
+                    newSpriteElem.css("background-repeat", "repeat-x");
                 } else if(options.animation.type & $.gameQuery.ANIMATION_HORIZONTAL) {
-                    $("#"+sprite).css("background-repeat", "repeat-y");
+                    newSpriteElem.css("background-repeat", "repeat-y");
                 } else {
-                    $("#"+sprite).css("background-repeat", "no-repeat");
+                    newSpriteElem.css("background-repeat", "no-repeat");
                 }
             }
 
 
-            var spriteDOMObject = $("#"+sprite)[0];
+            var spriteDOMObject = newSpriteElem[0];
             if(spriteDOMObject != undefined){
                 spriteDOMObject.gameQuery = options;
                 // Compute bounding Circle
@@ -795,17 +967,29 @@
                 posOffsetX:     0,
                 posOffsetY:     0,
                 factorh:        1,
-                factorv:        1
+                factorv:        1,
+                buffer:         1
             }, options);
 
-            var tileSet = $("<div class='"+$.gameQuery.tilemapCssClass+"' style='position: absolute; display: block; overflow: hidden;' />");
-            tileSet.css({top: options.posy, left: options.posx, height: options.height*options.sizey, width: options.width*options.sizex}).attr("id",name);
+            var tileSet = tilemapFragment.clone().attr("id",name).css({
+                    top: options.posy, 
+                    left: options.posx, 
+                    height: options.height*options.sizey, 
+                    width: options.width*options.sizex
+                });
+            
             if(this == $.gameQuery.playground){
                 $.gameQuery.scenegraph.append(tileSet);
             } else {
                 this.append(tileSet);
             }
-    
+            
+            tileSet[0].gameQuery = options;
+            var gameQuery = tileSet[0].gameQuery;
+            gameQuery.tileSet = true;
+            gameQuery.tiles = tileDescription;
+            gameQuery.func = (typeof tileDescription === "function");
+                
             if($.isArray(animationList)){
                 var frameTracker = [];
                 var idleCounter = [];
@@ -815,113 +999,32 @@
                     idleCounter[i] = 0;
                     frameIncrement[i] = 1;
                 }
-                tileSet[0].gameQuery = options
-                tileSet[0].gameQuery.frameTracker = frameTracker;
-                tileSet[0].gameQuery.animations = animationList;
-                tileSet[0].gameQuery.idleCounter =  idleCounter;
-                tileSet[0].gameQuery.frameIncrement = frameIncrement;
-                tileSet[0].gameQuery.tileSet = true;
+                gameQuery.frameTracker = frameTracker;
+                gameQuery.animations = animationList;
+                gameQuery.idleCounter =  idleCounter;
+                gameQuery.frameIncrement = frameIncrement;
+                gameQuery.multi = false;
             } else {
-                tileSet[0].gameQuery = options
-                tileSet[0].gameQuery.frameTracker = 0;
-                tileSet[0].gameQuery.frameIncrement = 1;
-                tileSet[0].gameQuery.animations = animationList;
-                tileSet[0].gameQuery.idleCounter =  0;
-                tileSet[0].gameQuery.tileSet = true;
+                gameQuery.frameTracker = 0;
+                gameQuery.frameIncrement = 1;
+                gameQuery.animations = animationList;
+                gameQuery.idleCounter =  0;
+                gameQuery.multi = true;
+                
             }
 
-            if(typeof tileDescription == "function"){
-                for(var i=0; i<options.sizey; i++){
-                    for(var j=0; j<options.sizex; j++){
-                        if(tileDescription(i,j) != 0){
-                            if($.isArray(animationList)){
-                                // For many simple animation
-                                tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
-                                                      {width: options.width,
-                                                       height: options.height,
-                                                       posx: j*options.width,
-                                                       posy: i*options.height,
-                                                       animation: animationList[tileDescription(i,j)-1]});
-                                var newTile = $("#tile_"+name+"_"+i+"_"+j);
-                                newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.addClass(gQprefix+"tileType_"+(tileDescription(i,j)-1));
-                                newTile[0].gameQuery.animationNumber = tileDescription(i,j)-1;
-                            } else {
-                                // For multi-animation
-                                tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
-                                                      {width: options.width,
-                                                       height: options.height,
-                                                       posx: j*options.width,
-                                                       posy: i*options.height,
-                                                       animation: animationList});
-                                var newTile = $("#tile_"+name+"_"+i+"_"+j);
-                                newTile.setAnimation(tileDescription(i,j)-1);
-                                newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.addClass(gQprefix+"tileType_"+(tileDescription(i,j)-1));
-                            }
-                        }
-                    }
-                }
-            } else if(typeof tileDescription == "object") {
-                for(var i=0; i<tileDescription.length; i++){
-                    for(var j=0; j<tileDescription[0].length; j++){
-                        if(tileDescription[i][j] != 0){
-                            if($.isArray(animationList)){
-                                // For many simple animation
-                                tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
-                                                      {width: options.width,
-                                                       height: options.height,
-                                                       posx: j*options.width,
-                                                       posy: i*options.height,
-                                                       animation: animationList[tileDescription[i][j]-1]});
-                                var newTile = $("#tile_"+name+"_"+i+"_"+j);
-                                newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.addClass(gQprefix+"tileType_"+(tileDescription[i][j]-1));
-                                newTile[0].gameQuery.animationNumber = tileDescription[i][j]-1;
-                            } else {
-                                // For multi-animation
-                                tileSet.addSprite("tile_"+name+"_"+i+"_"+j,
-                                                      {width: options.width,
-                                                       height: options.height,
-                                                       posx: j*options.width,
-                                                       posy: i*options.height,
-                                                       animation: animationList});
-                                var newTile = $("#tile_"+name+"_"+i+"_"+j);
-                                newTile.setAnimation(tileDescription[i][j]-1);
-                                newTile.removeClass($.gameQuery.spriteCssClass);
-                                newTile.addClass(gQprefix+"tileType_"+(tileDescription[i][j]-1));
-                            }
-                        }
-                    }
-                }
-            }
             // Get the tileSet offset (relative to the playground)
-            var tileSetOffset = {top: options.posy, left: options.posx};
-            var parent = this;
-            while(parent[0] !== $.gameQuery.playground[0]) {
-                if (parent[0].gameQuery !== undefined) {
-                    tileSetOffset.left += parent[0].gameQuery.posx;
-                    tileSetOffset.top += parent[0].gameQuery.posy;
+            var visible = visibleTilemapIndexes(tileSet);
+            var buffered = bufferedTilemapIndexes(tileSet, visible);
+            gameQuery.buffered = buffered;
+
+            // For many simple animation
+            for(var i = buffered.firstRow; i < buffered.lastRow; i++){
+                for(var j = buffered.firstColumn; j < buffered.lastColumn ; j++) {
+                    addTile(tileSet, i, j);
                 }
-                parent = $(parent).parent();
             }
             
-            // Activate the visible tiles
-            var firstRow = Math.max(Math.min(Math.floor(-tileSetOffset.top/options.height), options.sizey), 0);
-            var lastRow = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].height-tileSetOffset.top)/options.height), options.sizey), 0);
-            var firstColumn = Math.max(Math.min(Math.floor(-tileSetOffset.left/options.width), options.sizex), 0);
-            var lastColumn = Math.max(Math.min(Math.ceil(($.gameQuery.playground[0].width-tileSetOffset.left)/options.width), options.sizex), 0);
-
-            tileSet[0].gameQuery.firstRow = firstRow;
-            tileSet[0].gameQuery.lastRow = lastRow;
-            tileSet[0].gameQuery.firstColumn = firstColumn;
-            tileSet[0].gameQuery.lastColumn = lastColumn;
-
-            for(var i = firstRow; i < lastRow; i++){
-                for(var j = firstColumn; j < lastColumn ; j++) {
-                    $("#tile_"+name+"_"+i+"_"+j).toggleClass($.gameQuery.activeCssClass);
-                }
-            }
             return this.pushStack(tileSet);
         },
 
