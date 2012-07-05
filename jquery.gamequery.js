@@ -11,6 +11,11 @@
     // This prefix can be use whenever needed to namespace CSS classes, .data() inputs aso.
     var gQprefix = "gQ_";
     
+    // Those are the possible states of the engine
+    var STATE_NEW     = 0; // Not yet started for the first time
+    var STATE_RUNNING = 1; // Started and running 
+    var STATE_PAUSED  = 2; // Paused
+    
     /**
      * Utility function that returns the radius for a geometry.
      *
@@ -183,7 +188,7 @@
         /**
          * This is the Animation Object
          */
-        Animation: function (options) {
+        Animation: function (options, imediateCallback) {
             // private default values
             var defaults = {
                 imageURL:      "",
@@ -210,7 +215,7 @@
             this.offsety       = options.offsety;       // The y coordinate where the first sprite begins
 
             // Whenever a new animation is created we add it to the ResourceManager animation list
-            $.gameQuery.resourceManager.addAnimation(this);
+            $.gameQuery.resourceManager.addAnimation(this, imediateCallback);
 
             return true;
         },
@@ -239,20 +244,21 @@
             animations: [],    // List of animations / images used in the game
             sounds:     [],    // List of sounds used in the game
             callbacks:  [],    // List of the functions called at each refresh
-            running:    false, // State of the game,
+            loadedAnimationsPointer: 0, // Keep track of the last loaded animation
+            loadedSoundsPointer:    0, // Keep track of the last loaded sound
 
             /**
              * Load resources before starting the game.
              */
             preload: function() {
                 // Start loading the images
-                for (var i = this.animations.length-1 ; i >= 0; i --){
+                for (var i = this.animations.length-1 ; i >= this.loadedAnimationsPointer; i --){
                     this.animations[i].domO = new Image();
                     this.animations[i].domO.src = this.animations[i].imageURL;
                 }
 
                 // Start loading the sounds
-                for (var i = this.sounds.length-1 ; i >= 0; i --){
+                for (var i = this.sounds.length-1 ; i >= this.loadedSoundsPointer; i --){
                     this.sounds[i].load();
                 }
 
@@ -263,21 +269,16 @@
              * Wait for all the resources called for in preload() to finish loading.
              */
             waitForResources: function() {
-                var loadbarEnabled = ($.gameQuery.loadbar != undefined);
-                if(loadbarEnabled){
-                    $($.gameQuery.loadbar.id).width(0);
-                    var loadBarIncremant = $.gameQuery.loadbar.width / (this.animations.length + this.sounds.length);
-                }
                 // Check the images
                 var imageCount = 0;
-                for(var i=0; i < this.animations.length; i++){
+                for(var i=this.loadedAnimationsPointer; i < this.animations.length; i++){
                     if(this.animations[i].domO.complete){
                         imageCount++;
                     }
                 }
                 // Check the sounds
                 var soundCount = 0;
-                for(var i=0; i < this.sounds.length; i++){
+                for(var i=this.loadedSoundsPointer; i < this.sounds.length; i++){
                     var temp = this.sounds[i].ready();
                     if(temp){
                         soundCount++;
@@ -285,14 +286,17 @@
                 }
                 // Call the load callback with the current progress
                 if($.gameQuery.resourceManager.loadCallback){
-                    var percent = (imageCount+soundCount)/(this.animations.length + this.sounds.length)*100;
+                    var percent = (imageCount + soundCount)/(this.animations.length + this.sounds.length - this.loadedAnimationsPointer - this.loadedSoundsPointer)*100;
                     $.gameQuery.resourceManager.loadCallback(percent);
                 }
-                if(imageCount + soundCount < (this.animations.length + this.sounds.length)){
+                if(imageCount + soundCount < (this.animations.length + this.sounds.length  - this.loadedAnimationsPointer - this.loadedSoundsPointer)){
                     imgWait=setTimeout(function () {
                         $.gameQuery.resourceManager.waitForResources();
                     }, 100);
                 } else {
+                    this.loadedAnimationsPointer = this.animations.length;
+                    this.loadedSoundsPointer = this.sounds.length;
+                    
                     // All the resources are loaded! We can now associate the animation's images to their corresponding sprites
                     $.gameQuery.scenegraph.children().each(function(){
                         // recursive call on the children:
@@ -312,10 +316,12 @@
                     });
 
                     // Launch the refresh loop
-                    $.gameQuery.resourceManager.running = true;
-                    setInterval(function () {
-                        $.gameQuery.resourceManager.refresh();
-                    },($.gameQuery.refreshRate));
+                    if($.gameQuery.state === STATE_NEW){
+                        setInterval(function () {
+                            $.gameQuery.resourceManager.refresh();
+                        },($.gameQuery.refreshRate));
+                    }
+                    $.gameQuery.state = STATE_RUNNING;
                     if($.gameQuery.startCallback){
                         $.gameQuery.startCallback();
                     }
@@ -465,34 +471,36 @@
              * Called periodically to refresh the state of the game.
              */
             refresh: function() {
-                $.gameQuery.playground.find("."+$.gameQuery.spriteCssClass).each(this.refreshSprite);
-                $.gameQuery.playground.find("."+$.gameQuery.tilemapCssClass).each(this.refreshTilemap);
-                var deadCallback= new Array();
-                for (var i = this.callbacks.length-1; i >= 0; i--){
-                    if(this.callbacks[i].idleCounter == this.callbacks[i].rate-1){
-                        var returnedValue = this.callbacks[i].fn();
-                        if(typeof returnedValue == 'boolean'){
-                            // If we have a boolean: 'true' means 'no more execution', 'false' means 'keep on executing'
-                            if(returnedValue){
-                                deadCallback.push(i);
+                if($.gameQuery.state === STATE_RUNNING) {
+                    $.gameQuery.playground.find("."+$.gameQuery.spriteCssClass).each(this.refreshSprite);
+                    $.gameQuery.playground.find("."+$.gameQuery.tilemapCssClass).each(this.refreshTilemap);
+                    var deadCallback= new Array();
+                    for (var i = this.callbacks.length-1; i >= 0; i--){
+                        if(this.callbacks[i].idleCounter == this.callbacks[i].rate-1){
+                            var returnedValue = this.callbacks[i].fn();
+                            if(typeof returnedValue == 'boolean'){
+                                // If we have a boolean: 'true' means 'no more execution', 'false' means 'keep on executing'
+                                if(returnedValue){
+                                    deadCallback.push(i);
+                                }
+                            } else if(typeof returnedValue == 'number') {
+                                // If we have a number it re-defines the time to the next call
+                                this.callbacks[i].rate = Math.round(returnedValue/$.gameQuery.refreshRate);
+                                this.callbacks[i].idleCounter = 0;
                             }
-                        } else if(typeof returnedValue == 'number') {
-                            // If we have a number it re-defines the time to the next call
-                            this.callbacks[i].rate = Math.round(returnedValue/$.gameQuery.refreshRate);
-                            this.callbacks[i].idleCounter = 0;
                         }
+                        this.callbacks[i].idleCounter = (this.callbacks[i].idleCounter+1)%this.callbacks[i].rate;
                     }
-                    this.callbacks[i].idleCounter = (this.callbacks[i].idleCounter+1)%this.callbacks[i].rate;
-                }
-                for(var i = deadCallback.length-1; i >= 0; i--){
-                    this.callbacks.splice(deadCallback[i],1);
+                    for(var i = deadCallback.length-1; i >= 0; i--){
+                        this.callbacks.splice(deadCallback[i],1);
+                    }
                 }
             },
 
             /**
              * Add an animation to the resource Manager 
              */
-            addAnimation: function(animation) {
+            addAnimation: function(animation, callback) {
                 if($.inArray(animation,this.animations)<0){
                     //normalize the animation rate:
                     animation.rate = Math.round(animation.rate/$.gameQuery.refreshRate);
@@ -500,15 +508,42 @@
                         animation.rate = 1;
                     }
                     this.animations.push(animation);
+                    switch ($.gameQuery.state){
+                        case STATE_NEW:
+                        case STATE_PAUSED:
+                            // Nothing to do for now 
+                            break;
+                        case STATE_RUNNING:
+                            // immediatly load the animation and call the callback if any
+                            this.animations[this.loadedAnimationsPointer].domO = new Image();
+                            this.animations[this.loadedAnimationsPointer].domO.src = animation.imageURL;
+                            if (callback !== undefined){
+                                this.animations[this.loadedAnimationsPointer].domO.onload = callback;
+                            }
+                            this.loadedAnimationsPointer++;
+                            break;
+                    }
                 }
             },
             
             /**
              * Add a sound to the resource Manager 
              */
-            addSound: function(sound){
+            addSound: function(sound, callback){
                 if($.inArray(sound,this.sounds)<0){
                     this.sounds.push(sound);
+                    switch ($.gameQuery.state){
+                        case STATE_NEW:
+                        case STATE_PAUSED:
+                            // Nothing to do for now 
+                            break;
+                        case STATE_RUNNING:
+                            // immediatly load the sound and call the callback if any
+                            sound.load();
+                            // TODO callback....
+                            this.loadedSoundsPointer++;
+                            break;
+                    }
                 }
             },
 
@@ -524,6 +559,19 @@
                     rate = 1;
                 }
                 this.callbacks.push({fn: fn, rate: rate, idleCounter: 0});
+            },
+            
+            /**
+             * Clear the animations and sounds 
+             */
+            clear: function(callbacksToo){
+                this.animations  = [];
+                this.loadedAnimationsPointer = 0;
+                this.sounds = [];
+                this.loadedSoundsPointer = 0;
+                if(callbacksToo) {
+                    this.callbacks = [];
+                }
             }
         },
 
@@ -705,6 +753,9 @@
                 }
             }
         },
+        // State of the engine
+        state: STATE_NEW,
+        
         // CSS classes used to mark game element 
         spriteCssClass:  gQprefix + "sprite",
         groupCssClass:   gQprefix + "group",
@@ -832,9 +883,45 @@
          * This is a non-destructive call
          */
         startGame: function(callback) {
-            // If the element is the playground we start the game:
             $.gameQuery.startCallback = callback;
             $.gameQuery.resourceManager.preload();
+            return this;
+        },
+        
+        /**
+         * TODO
+         */
+        pauseGame: function() {
+            $.gameQuery.state = STATE_PAUSED;
+            $.gameQuery.scenegraph.css("visibility","hidden");
+            return this;
+        },
+        
+        /**
+         * Resume the game if it was paused and call the callback passed in argument once the newly added ressources are loaded.
+         */
+        resumeGame: function(callback) {
+            if($.gameQuery.state === STATE_PAUSED){
+                $.gameQuery.startCallback = callback;
+                $.gameQuery.resourceManager.preload();
+            }
+            return this;
+        },
+
+        /**
+         * Removes all the sprites, groups and tilemaps present in the scenegraph
+         */
+        clearScengraph: function() {
+            $.gameQuery.scenegraph.empty()
+            return this;
+        },
+        
+        /**
+         * Removes all the sprites, groups and tilemaps present in the scenegraph as well as all loaded animations and sounds
+         */
+        clearAll: function(callbackToo) {
+            $.gameQuery.scenegraph.empty();
+            $.gameQuery.resourceManager.clear(callbackToo)
             return this;
         },
 
@@ -925,7 +1012,7 @@
             // If the game has already started we want to add the animation's image as a background now
             if(options.animation){
                 // The second test is a fix for default background    (https://github.com/onaluf/gameQuery/issues/3)
-                if($.gameQuery.resourceManager.running && options.animation.imageURL !== ''){
+                if($.gameQuery.state === STATE_RUNNING && options.animation.imageURL !== ''){
                     newSpriteElem.css("background-image", "url("+options.animation.imageURL+")");
                 }
                 if(options.animation.type & $.gameQuery.ANIMATION_VERTICAL) {
