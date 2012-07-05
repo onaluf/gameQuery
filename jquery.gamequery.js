@@ -911,7 +911,7 @@
         /**
          * Removes all the sprites, groups and tilemaps present in the scenegraph
          */
-        clearScengraph: function() {
+        clearScenegraph: function() {
             $.gameQuery.scenegraph.empty()
             return this;
         },
