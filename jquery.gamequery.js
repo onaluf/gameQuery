@@ -82,7 +82,7 @@
      * Warning: No non-gameQuery elements should be present between this element and the playground div!
      * 
      * @param {jQuery} element the jQuery wrapped DOM element representing the gameQuery object.
-     * @returns {object} an object {x:, y: } containing the x and y offset. (Not top and left like jQuery's .offset())  
+     * @return {object} an object {x:, y: } containing the x and y offset. (Not top and left like jQuery's .offset())  
      */
     var offset = function(element) {
         // Get the tileSet offset (relative to the playground)
@@ -103,7 +103,7 @@
      * 
      * @param {jQuery} element the jQuery wrapped DOM element representing the tilemap.
      * @param {object} offset an object holding the x and y offset of the tilemap, this is optional and will be computed if not provided.
-     * @returns {object} an object {firstColumn: , lastColumn: , fristRow: , lastRow: } 
+     * @return {object} an object {firstColumn: , lastColumn: , fristRow: , lastRow: } 
      */
     var visibleTilemapIndexes = function (element, elementOffset) {
         if (elementOffset === undefined) {
@@ -125,7 +125,7 @@
      * 
      * @param {jQuery} element the jQuery wrapped DOM element representing the tilemap.
      * @param {object} visible an object describing the visible zone
-     * @returns {object} an object {firstColumn: , lastColumn: , fristRow: , lastRow: }
+     * @return {object} an object {firstColumn: , lastColumn: , fristRow: , lastRow: }
      */
     var bufferedTilemapIndexes = function (element, visible) {
         var gameQuery = element[0].gameQuery;
