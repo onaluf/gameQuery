@@ -10,7 +10,7 @@
                 var blue = new $.gameQuery.Animation({imageURL: "blue.png", 
                                                                 type: $.gameQuery.ANIMATION_HORIZONTAL});
                 
-                $("#playground").playground({height: 640, width: 350});
+                $("#playground").playground({height: 450, width: 350});
                 
                 // no group, no translation, no transformation
                 $.playground()
@@ -54,6 +54,11 @@
                     .addSprite("b7",{animation: red, width: 30, height: 30, posx: 30, posy: 315});
                 $("#b7").scale(1.5);
                 
+                // no group, no translation, override
+                $.playground()
+                    .addSprite("a8",{animation: red, width: 30, height: 30, posx: 0, posy: 370})
+                    .addSprite("b8",{animation: red, width: 30, height: 30, posx: 40, posy: 385});
+
                 
                 // now we try to turn every b* sprites blue
                 $("#a1").collision().each(function() {
@@ -84,12 +89,16 @@
                 	$(this).setAnimation(blue);
                 });
                 
+                $("#a8").collision({x: 35}).each(function() {
+                	$(this).setAnimation(blue);
+                });
+                
                 $.playground().startGame();
             });
         </script>
     </head>
     <body>
         <h2>Each line shoud contains a blue square in front of a red one:</h2>
-        <div id="playground" style="width: 350px; height: 50px; background: white"></div>
+        <div id="playground" style="width: 350px; height: 450px; background: white"></div>
     </body>
 </html>
