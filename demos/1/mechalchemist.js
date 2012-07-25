@@ -351,88 +351,88 @@ function restartGame(){
 // --------------------------------------------------------------------------------------------------------------------
 $(function(){
 	//We declare an animation: 
-	var animationBG = 			new $.gameQuery.Animation({	imageURL: "./background.png"});
+	var animationBG = 			new $.gQ.Animation({	imageURL: "./background.png"});
 	
-	var gameOverAnimation =		new $.gameQuery.Animation({	imageURL: "./gameover.png"});
+	var gameOverAnimation =		new $.gQ.Animation({	imageURL: "./gameover.png"});
 	
-	var animationBGmask =		new $.gameQuery.Animation({	imageURL: "./cache.png"});
+	var animationBGmask =		new $.gQ.Animation({	imageURL: "./cache.png"});
 	
-	var animationProbe = 		new $.gameQuery.Animation({	imageURL: "./probe.png"});
+	var animationProbe = 		new $.gQ.Animation({	imageURL: "./probe.png"});
 	
-	var animationContainer =	new $.gameQuery.Animation({	imageURL: "./container.png"});
+	var animationContainer =	new $.gQ.Animation({	imageURL: "./container.png"});
 	
-	var animationContainerSide =new $.gameQuery.Animation({	imageURL: "./container-side.png",
-												type: $.gameQuery.ANIMATION_VERTICAL});
+	var animationContainerSide =new $.gQ.Animation({	imageURL: "./container-side.png",
+												type: $.gQ.ANIMATION_VERTICAL});
 													
-	var eraseAnimation =		new $.gameQuery.Animation({	imageURL: "./explosion.png",
+	var eraseAnimation =		new $.gQ.Animation({	imageURL: "./explosion.png",
 												numberOfFrame: 3,
 												delta: 60,
 												rate: 90,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 	
-	var beamAnimation =			new $.gameQuery.Animation({	imageURL: "./beam.png"});
+	var beamAnimation =			new $.gQ.Animation({	imageURL: "./beam.png"});
 						
-	var sparkAnimation = 		new $.gameQuery.Animation({	imageURL: "./spark.png",
+	var sparkAnimation = 		new $.gQ.Animation({	imageURL: "./spark.png",
 												numberOfFrame: 5,
 												delta: 19,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 													
 	var containementSparkAnimation = 
-								new $.gameQuery.Animation({	imageURL: "./containement-spark.png",
+								new $.gQ.Animation({	imageURL: "./containement-spark.png",
 												numberOfFrame: 5,
 												delta: 60,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 
 	spriteList = new Array(5); //the list of sprite for the balls
 	var conversionList = new Array(5); 
 	
-	spriteList[0] = 	new $.gameQuery.Animation({	imageURL: "./coal.png"});
+	spriteList[0] = 	new $.gQ.Animation({	imageURL: "./coal.png"});
 	conversionList[0] =	1;
 	
-	spriteList[1] =		new $.gameQuery.Animation({	imageURL: "./coper.png"});
+	spriteList[1] =		new $.gQ.Animation({	imageURL: "./coper.png"});
 	conversionList[1] =	4;
 	
-	spriteList[2] = 	new $.gameQuery.Animation({	imageURL: "./silver.png"});
+	spriteList[2] = 	new $.gQ.Animation({	imageURL: "./silver.png"});
 	conversionList[2] = 2;
 	
-	spriteList[3] = 	new $.gameQuery.Animation({	imageURL: "./gold.png"});
+	spriteList[3] = 	new $.gQ.Animation({	imageURL: "./gold.png"});
 	conversionList[3] =	4;
 	
-	spriteList[4] = 	new $.gameQuery.Animation({	imageURL: "./diamon.png"});
+	spriteList[4] = 	new $.gQ.Animation({	imageURL: "./diamon.png"});
 	conversionList[4] =	1;
 	
 	animatedSpriteList = new Array(5); //the list of animation for the balls
-	animatedSpriteList[0] = new $.gameQuery.Animation({	imageURL: "./coalspark.png",
+	animatedSpriteList[0] = new $.gQ.Animation({	imageURL: "./coalspark.png",
 												numberOfFrame: 6,
 												delta: 60,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 
-	animatedSpriteList[1] = new $.gameQuery.Animation({	imageURL: "./coperspark.png",
+	animatedSpriteList[1] = new $.gQ.Animation({	imageURL: "./coperspark.png",
 												numberOfFrame: 6,
 												delta: 60,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 												
-	animatedSpriteList[2] = new $.gameQuery.Animation({	imageURL: "./silverspark.png",
+	animatedSpriteList[2] = new $.gQ.Animation({	imageURL: "./silverspark.png",
 												numberOfFrame: 6,
 												delta: 60,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 												
-	animatedSpriteList[3] = new $.gameQuery.Animation({	imageURL: "./goldspark.png",
+	animatedSpriteList[3] = new $.gQ.Animation({	imageURL: "./goldspark.png",
 												numberOfFrame: 6,
 												delta: 60,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 												
-	animatedSpriteList[4] = new $.gameQuery.Animation({	imageURL: "./diamonspark.png",
+	animatedSpriteList[4] = new $.gQ.Animation({	imageURL: "./diamonspark.png",
 												numberOfFrame: 6,
 												delta: 60,
 												rate: 60,
-												type: $.gameQuery.ANIMATION_VERTICAL});
+												type: $.gQ.ANIMATION_VERTICAL});
 	
 	//generate the initial array of "balls"
 	function generateRandomColumn(){

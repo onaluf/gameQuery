@@ -37,17 +37,17 @@ function updateSquare(jQueryNode,deltaT){
 
 $(function(){
 	//We declare an animation: 
-	var red = new $.gameQuery.Animation({imageURL: "./red.png"});
-	var redExplosion = new $.gameQuery.Animation({	imageURL: "./explosion.png",
+	var red = new $.gQ.Animation({imageURL: "./red.png"});
+	var redExplosion = new $.gQ.Animation({	imageURL: "./explosion.png",
 									numberOfFrame: 10,
 									delta: 60,
 									rate: 60,
 									distance: 60,
-									type: $.gameQuery.ANIMATION_VERTICAL | $.gameQuery.ANIMATION_CALLBACK});
-	var blue =	new $.gameQuery.Animation({	imageURL: "./blue.png"});
+									type: $.gQ.ANIMATION_VERTICAL | $.gQ.ANIMATION_CALLBACK});
+	var blue =	new $.gQ.Animation({	imageURL: "./blue.png"});
 	
     //And sounds
-    var music = new $.gameQuery.SoundWrapper("./music.mp3", true);
+    var music = new $.gQ.SoundWrapper("./music.mp3", true);
     
 	//set the playground
 	$("#playground").playground({height: PLAYGROUND_HEIGHT, width: PLAYGROUND_WIDTH, refreshRate: 30, keyTracker: true});
@@ -59,7 +59,7 @@ $(function(){
 								 height: 30,
 								 width: 30,
 								 animation: blue,
-                                 geometry: $.gameQuery.GEOMETRY_RECTANGLE/*GEOMETRY_DISC GEOMETRY_RECTANGLE*/});
+                                 geometry: $.gQ.GEOMETRY_RECTANGLE/*GEOMETRY_DISC GEOMETRY_RECTANGLE*/});
 	$("#blue").scale(3).rotate(10).addSound(music);
 	//creates the moving red square 
 	var listOfReds = new Array();
@@ -71,7 +71,7 @@ $(function(){
 											 height: 30,
 											 width: 30,
 							 				 animation: red,
-                                             geometry: $.gameQuery.GEOMETRY_RECTANGLE});
+                                             geometry: $.gQ.GEOMETRY_RECTANGLE});
 		var newSprite = $("#red_"+redinit);
         newSprite.scale(Math.random()+0.5).rotate(Math.random()*360);
 		newSprite[0].gameQuery.speedx = Math.random()*2;
@@ -94,16 +94,16 @@ $(function(){
 		
 		//Update the position of the blue dot:
         //this is where the keybinding occurs
-        if($.gameQuery.keyTracker[65]){ //this is left! (a)
+        if($.gQ.keyTracker[65]){ //this is left! (a)
             bluePosX -= 3;
         }
-        if($.gameQuery.keyTracker[87]){ //this is up! (w)
+        if($.gQ.keyTracker[87]){ //this is up! (w)
             bluePosY -= 3;
         }
-        if($.gameQuery.keyTracker[68]){ //this is right (d)
+        if($.gQ.keyTracker[68]){ //this is right (d)
             bluePosX += 3;
         }
-        if($.gameQuery.keyTracker[83]){ //this is down! (s)
+        if($.gQ.keyTracker[83]){ //this is down! (s)
             bluePosY += 3;
         }
         
