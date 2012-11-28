@@ -7,7 +7,20 @@
 
 // This allows use of the convenient $ notation in a plugin
 (function($) {
-    
+	
+	// CSS Feature detection from: Craig Buckler (http://www.sitepoint.com/detect-css3-property-browser-support/)
+	var cssTransform = false;
+	
+	var detectElement = document.createElement("detect"),  
+    	CSSprefix = "Webkit,Moz,O,ms,Khtml".split(","),
+    	All = ("transform," + CSSprefix.join("Transform,") + "Transform").split(",");  
+	for (var i = 0, l = All.length; i < l; i++) {  
+	    if (detectElement.style[All[i]] === "") {  
+	          cssTransform = All[i];
+	          console.info("CSS transform detected: "+cssTransform);
+	    }  
+	}
+	
     // This prefix can be use whenever needed to namespace CSS classes, .data() inputs aso.
     var gQprefix = "gQ_";
     
@@ -950,8 +963,6 @@
 
             var newGroupElement = groupFragment.clone().attr("id",group).css({
                     overflow: options.overflow,
-                    top:      options.posy,
-                    left:     options.posx,
                     height:   options.height,
                     width:    options.width
                 });
@@ -967,6 +978,7 @@
                                                     originalRadius: Math.sqrt(Math.pow(options.width,2) + Math.pow(options.height,2))/2};
             newGroupElement[0].gameQuery.boundingCircle.radius = newGroupElement[0].gameQuery.boundingCircle.originalRadius;
             newGroupElement[0].gameQuery.group = true;
+            newGroupElement.transform();
             return this.pushStack(newGroupElement);
         },
 
@@ -998,8 +1010,6 @@
             var newSpriteElem = spriteFragment.clone().attr("id",sprite).css({
                      height: options.height,
                      width: options.width,
-                     left: options.posx,
-                     top: options.posy,
                      backgroundPosition: ((options.animation)? -options.animation.offsetx : 0)+"px "+((options.animation)? -options.animation.offsety : 0)+"px"
                 });
                 
@@ -1034,6 +1044,7 @@
                                                             originalRadius: Math.sqrt(Math.pow(options.width,2) + Math.pow(options.height,2))/2};
                 spriteDOMObject.gameQuery.boundingCircle.radius = spriteDOMObject.gameQuery.boundingCircle.originalRadius;
             }
+            newSpriteElem.transform();
             return this;
         },
 
@@ -1053,14 +1064,14 @@
                 posz:           0,
                 posOffsetX:     0,
                 posOffsetY:     0,
+                angle:          0,
+                factor:         1,
                 factorh:        1,
                 factorv:        1,
                 buffer:         1
             }, options);
 
             var tileSet = tilemapFragment.clone().attr("id",name).css({
-                    top: options.posy, 
-                    left: options.posx, 
                     height: options.height*options.sizey, 
                     width: options.width*options.sizex
                 });
@@ -1111,7 +1122,7 @@
                     addTile(tileSet, i, j);
                 }
             }
-            
+            tileSet.transform()
             return this.pushStack(tileSet);
         },
 
@@ -1426,30 +1437,18 @@
          * 
          * This is a non-destructive call.
          */
-        transform: function(angle, factor) {
+        /*transform: function(angle, factor) {
             var gameQuery = this[0].gameQuery;
             // Mark transformed and compute bounding box
             $.gameQuery.update(gameQuery,{angle: angle, factor: factor});
 
-            if(this.css("MozTransform")) {
-                // For firefox from 3.5
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("MozTransform",transform);
-            } else if(this.css("-o-transform")) {
-                // For opera from 10.50
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("-o-transform",transform);
-            } else if(this.css("msTransform")!==null && this.css("msTransform")!==undefined) {
-                // For ie from 9
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("msTransform",transform);
-            } else if(this.css("WebkitTransform")!==null && this.css("WebkitTransform")!==undefined) {
-                // For safari from 3.1 (and chrome)
-                var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-                this.css("WebkitTransform",transform);
-            } else if(this.css("filter")!==undefined){
-                var angle_rad = Math.PI * 2 / 360 * angle;
-                // For ie from 5.5
+			if(cssTransform){
+				var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
+				this.css(cssTransform,transform);
+			} else {
+				var angle_rad = Math.PI * 2 / 360 * angle;
+				// try filter for IE 
+				// For ie from 5.5
                 var cos = Math.cos(angle_rad) * factor;
                 var sin = Math.sin(angle_rad) * factor;
                 this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+(cos*gameQuery.factorh)+",M12="+(-sin*gameQuery.factorv)+",M21="+(sin*gameQuery.factorh)+",M22="+(cos*gameQuery.factorv)+",SizingMethod='auto expand',FilterType='nearest neighbor')");
@@ -1460,7 +1459,32 @@
 
                 this.css("left", ""+(gameQuery.posx-gameQuery.posOffsetX)+"px");
                 this.css("top", ""+(gameQuery.posy-gameQuery.posOffsetY)+"px");
-            }
+			}
+			
+            return this;
+        },*/
+        transform: function() {
+            var gameQuery = this[0].gameQuery;
+
+			if(cssTransform){
+				var transform = "translate("+gameQuery.posx+"px, "+gameQuery.posy+"px) rotate("+gameQuery.angle+"deg) scale("+(gameQuery.factor*gameQuery.factorh)+","+(gameQuery.factor*gameQuery.factorv)+")";
+				this.css(cssTransform,transform);
+			} else {
+				var angle_rad = Math.PI * 2 / 360 * angle;
+				// try filter for IE 
+				// For ie from 5.5
+                var cos = Math.cos(angle_rad) * factor;
+                var sin = Math.sin(angle_rad) * factor;
+                this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+(cos*gameQuery.factorh)+",M12="+(-sin*gameQuery.factorv)+",M21="+(sin*gameQuery.factorh)+",M22="+(cos*gameQuery.factorv)+",SizingMethod='auto expand',FilterType='nearest neighbor')");
+                var newWidth = this.width();
+                var newHeight = this.height();
+                gameQuery.posOffsetX = (newWidth-gameQuery.width)/2;
+                gameQuery.posOffsetY = (newHeight-gameQuery.height)/2;
+
+                this.css("left", ""+(gameQuery.posx-gameQuery.posOffsetX)+"px");
+                this.css("top", ""+(gameQuery.posy-gameQuery.posOffsetY)+"px");
+			}
+			
             return this;
         },
 
@@ -1475,10 +1499,11 @@
             var gameQuery = this[0].gameQuery;
 
             if(angle !== undefined) {
-                return this.transform(angle % 360, this.scale());
+                $.gameQuery.update(gameQuery,{angle: angle});
+                return this.transform();
             } else {
                 var ang = gameQuery.angle;
-                return ang ? ang : 0;
+                return ang;
             }
         },
 
@@ -1493,10 +1518,11 @@
             var gameQuery = this[0].gameQuery;
 
             if(factor !== undefined) {
-                return this.transform(this.rotate(), factor);
+            	$.gameQuery.update(gameQuery,{factor: factor});
+                return this.transform();
             } else {
                 var fac = gameQuery.factor;
-                return fac ? fac : 1;
+                return fac;
             }
         },
 
@@ -1666,7 +1692,7 @@
                             option.x += gameQuery.posx;
                         }
                         gameQuery.posx = option.x;
-                        this.css("left",""+(gameQuery.posx + gameQuery.posOffsetX)+"px");
+                        this.transform();
                         
                         //update the sub tile maps (if any), this forces to recompute which tiles are visible
                         this.find("."+$.gameQuery.tilemapCssClass).each(function(){
@@ -1679,7 +1705,7 @@
                             option.y += gameQuery.posy;
                         }
                         gameQuery.posy = option.y;
-                        this.css("top",""+(gameQuery.posy + gameQuery.posOffsetY)+"px");
+                        this.transform();
                         
                         //update the sub tile maps (if any), this forces to recompute which tiles are visible
                         this.find("."+$.gameQuery.tilemapCssClass).each(function(){
