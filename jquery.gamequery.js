@@ -1437,32 +1437,6 @@
          * 
          * This is a non-destructive call.
          */
-        /*transform: function(angle, factor) {
-            var gameQuery = this[0].gameQuery;
-            // Mark transformed and compute bounding box
-            $.gameQuery.update(gameQuery,{angle: angle, factor: factor});
-
-			if(cssTransform){
-				var transform = "rotate("+angle+"deg) scale("+(factor*gameQuery.factorh)+","+(factor*gameQuery.factorv)+")";
-				this.css(cssTransform,transform);
-			} else {
-				var angle_rad = Math.PI * 2 / 360 * angle;
-				// try filter for IE 
-				// For ie from 5.5
-                var cos = Math.cos(angle_rad) * factor;
-                var sin = Math.sin(angle_rad) * factor;
-                this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+(cos*gameQuery.factorh)+",M12="+(-sin*gameQuery.factorv)+",M21="+(sin*gameQuery.factorh)+",M22="+(cos*gameQuery.factorv)+",SizingMethod='auto expand',FilterType='nearest neighbor')");
-                var newWidth = this.width();
-                var newHeight = this.height();
-                gameQuery.posOffsetX = (newWidth-gameQuery.width)/2;
-                gameQuery.posOffsetY = (newHeight-gameQuery.height)/2;
-
-                this.css("left", ""+(gameQuery.posx-gameQuery.posOffsetX)+"px");
-                this.css("top", ""+(gameQuery.posy-gameQuery.posOffsetY)+"px");
-			}
-			
-            return this;
-        },*/
         transform: function() {
             var gameQuery = this[0].gameQuery;
 
@@ -1496,17 +1470,20 @@
          *
          * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current rotation angle!
          */
-        rotate: function(degrees, rel){
-            var gameQuery = this[0].gameQuery,
-                currentAngle = gameQuery.angle;
-
-            if(degrees !== undefined && rel === true){                
-                return this.transform((currentAngle + degrees) % 360, this.scale());
-            } else if(degrees !== undefined) {
-                return this.transform(degrees % 360, this.scale());
-            } else {                
-                return currentAngle ? currentAngle : 0;
-            }
+        rotate: function(angle, relative){
+             var gameQuery = this[0].gameQuery;
+ 
+             if(angle !== undefined) {
+             	 if(relative === true){
+                    angle += gameQuery.angle;
+                    angle %= 360;
+            	 }
+                 $.gameQuery.update(gameQuery,{angle: angle});
+                 return this.transform();
+             } else {
+                 var ang = gameQuery.angle;
+                 return ang;
+             }
         },
 
         /**
@@ -1517,17 +1494,19 @@
          * 
          * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current scale factor!
          */
-        scale: function(factor, rel){
-            var gameQuery = this[0].gameQuery,
-                currentFactor = gameQuery.factor;
-
-            if(factor !== undefined && rel === true) {                
-                return this.transform(this.rotate(), currentFactor + factor);    
-            } else if(factor !== undefined) {
-                return this.transform(this.rotate(), factor);
-            } else {                
-                return currentFactor ? currentFactor : 1;
-            }
+        scale: function(factor, relative){
+             var gameQuery = this[0].gameQuery;
+ 
+             if(factor !== undefined) {
+             	if(relative === true){
+                    factor *= gameQuery.factor;
+            	 }
+                 $.gameQuery.update(gameQuery,{factor: factor});
+                 return this.transform();
+             } else {
+                 var fac = gameQuery.factor;
+                 return fac;
+             }
         },
 
         /**
@@ -1546,7 +1525,7 @@
                 gameQuery.factorh = 1;
             }
 
-            return this.transform(this.rotate(), this.scale());
+            return this.transform();
         },
 
         /**
@@ -1565,7 +1544,7 @@
                 gameQuery.factorv = 1;
             }
 
-            return this.transform(this.rotate(), this.scale());
+            return this.transform();
         },
 
 /** ---------------------------------------------------------------------------------------------------------------------------------------------------------------- **/

@@ -15,9 +15,11 @@
                     .addSprite("aScaleRotate",{animation: animation, posx: 240, posy: 16})
                 
                 var angle = 45;
+                $("#scaleARotate").rotate(-45);
+                
                 $.playground().registerCallback(function(){
                         $("#aRotateScale").rotate(angle).scale(2);
-                        $("#scaleARotate").scale(2).rotate(-angle);
+                        $("#scaleARotate").scale(2).rotate(1, true);
                         $("#rotateAScale").rotate(45).scale(Math.cos(angle/360*Math.PI*2)*2);
                         $("#aScaleRotate").scale(-Math.cos(angle/360*Math.PI*2)*2).rotate(45);
                         angle -= 1;

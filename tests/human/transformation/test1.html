@@ -6,25 +6,29 @@
             $(function(){
                 var animation = new $.gameQuery.Animation({imageURL: "sh.png", type: $.gameQuery.ANIMATION_HORIZONTAL, numberOfFrame: 4, delta: 32, rate: 300});
                 
-                $("#playground").playground({height: 64, width: 350});
+                $("#playground").playground({height: 64, width: 480});
                 
                 $.playground()
                     .addSprite("rotate",{animation: animation, posx: 0, posy: 16})
                     .addSprite("scale",{animation: animation, posx: 80, posy: 16})
                     .addSprite("rotateScale",{animation: animation, posx: 160, posy: 16})
                     .addSprite("scaleRotate",{animation: animation, posx: 240, posy: 16})
+                    .addSprite("flipH",{animation: animation, posx: 320, posy: 16})
+                    .addSprite("flipV",{animation: animation, posx: 400, posy: 16})
                 
                 $("#rotate").rotate(45);
-                $("#scale").scale(2);
+                $("#scale").scale(4);
+                $("#scale").scale(0.5, true);
                 $("#rotateScale").rotate(45).scale(2);
                 $("#scaleRotate").scale(2).rotate(45);
-                
+                $("#flipV").flipv(true);
+                $("#flipH").fliph(true);
                 $.playground().startGame();
             });
         </script>
     </head>
     <body>
-        <h2>1st 45deg rotate, 2nd 2x scale, two last both combined:</h2>
+        <h2>1st 45deg rotate, 2nd 2x scale, two next both combined, 5th fliped horizontaly, 6th fliped verticaly:</h2>
         <div id="playground" style="width: 350px; height: 50px; background: white"></div>
     </body>
 </html>
