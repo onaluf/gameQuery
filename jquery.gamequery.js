@@ -363,6 +363,7 @@
                                     if(gameQuery.animation.type & $.gameQuery.ANIMATION_CALLBACK){
                                         if($.isFunction(gameQuery.callback)){
                                             gameQuery.callback(this);
+                                            gameQuery.callback = false;
                                         }
                                     }
                                 }

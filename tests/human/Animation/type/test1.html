@@ -19,7 +19,9 @@
                 var pingpongAnimation = new $.gameQuery.Animation({imageURL: "rebound.png", type: $.gameQuery.ANIMATION_HORIZONTAL |  $.gameQuery.ANIMATION_PINGPONG, numberOfFrame: 9, delta: 64, rate: 60});
                 var multiPingpongAnimation = new $.gameQuery.Animation({imageURL: "reboundm.png", type: $.gameQuery.ANIMATION_HORIZONTAL |  $.gameQuery.ANIMATION_PINGPONG | $.gameQuery.ANIMATION_MULTI, numberOfFrame: 9, delta: 64, rate: 60, distance: 64});
                 
-                $("#playground").playground({height: 64, width: 414});
+                var callbackAnim =  new $.gameQuery.Animation({imageURL: "sv.png", type: $.gameQuery.ANIMATION_VERTICAL | $.gameQuery.ANIMATION_ONCE | $.gameQuery.ANIMATION_CALLBACK, numberOfFrame: 4, delta: 32, rate: 300});
+                var counter = 0;
+                $("#playground").playground({height: 64, width: 500});
                 
                 $.playground()
                     .addSprite("simpleVertical",{animation: simpleVerticalAnimation, posx: 0})
@@ -31,7 +33,13 @@
                     .addSprite("multiOffsetVertical",{animation: multiOffsetVerticalAnimation, posx: 225})
                     .addSprite("multiOffsetHorizontal",{animation: multiOffsetHorizontalAnimation, posx: 259})
                     .addSprite("pingpong",{animation: pingpongAnimation, posx: 286, width: 64, height: 64})
-                    .addSprite("multiPingpong",{animation: multiPingpongAnimation, posx: 350, width: 64, height: 64});
+                    .addSprite("multiPingpong",{animation: multiPingpongAnimation, posx: 350, width: 64, height: 64})
+                    .addSprite("callback",{animation: callbackAnim, posx: 414, callback: function(){
+                    	counter++;
+                    	if(counter > 1){
+                    		$("#callback").remove();
+                    	}
+                    }});
                 
                 $("#multiVertical").setAnimation(1);
                 $("#multiHorizontal").setAnimation(1);
@@ -44,7 +52,7 @@
         </script>
     </head>
     <body>
-        <h2>All of the following sprites should look the same, without any red visible:</h2>
+        <h2>1st to 8th : All look the same, without any red visible, 9th and 10th bouncing ball, 11th walk and stops:</h2>
         <div id="playground" style="width: 350px; height: 50px; background: white"></div>
     </body>
 </html>
