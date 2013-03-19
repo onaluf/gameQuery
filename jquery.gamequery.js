@@ -17,7 +17,6 @@
 	for (var i = 0, l = All.length; i < l; i++) {  
 	    if (detectElement.style[All[i]] === "") {  
 	          cssTransform = All[i];
-	          console.info("CSS transform detected: "+cssTransform);
 	    }  
 	}
 	
