@@ -1470,11 +1470,11 @@
 				var transform = "translate("+gameQuery.posx+"px, "+gameQuery.posy+"px) rotate("+gameQuery.angle+"deg) scale("+(gameQuery.factor*gameQuery.factorh)+","+(gameQuery.factor*gameQuery.factorv)+")";
 				this.css(cssTransform,transform);
 			} else {
-				var angle_rad = Math.PI * 2 / 360 * angle;
+				var angle_rad = Math.PI * 2 / 360 * gameQuery.angle;
 				// try filter for IE 
 				// For ie from 5.5
-                var cos = Math.cos(angle_rad) * factor;
-                var sin = Math.sin(angle_rad) * factor;
+                var cos = Math.cos(angle_rad) * gameQuery.factor;
+                var sin = Math.sin(angle_rad) * gameQuery.factor;
                 this.css("filter","progid:DXImageTransform.Microsoft.Matrix(M11="+(cos*gameQuery.factorh)+",M12="+(-sin*gameQuery.factorv)+",M21="+(sin*gameQuery.factorh)+",M22="+(cos*gameQuery.factorv)+",SizingMethod='auto expand',FilterType='nearest neighbor')");
                 var newWidth = this.width();
                 var newHeight = this.height();
