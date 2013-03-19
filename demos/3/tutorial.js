@@ -22,6 +22,7 @@ var bossName = null;
 var playerHit = false;
 var timeOfRespawn = 0;
 var gameOver = false;
+var missileCounter = 0;
 
 // Some hellper functions : 
 
@@ -330,7 +331,8 @@ $(function(){
 						if(Math.random() < 0.05){
 							var enemyposx = $(this).x();
 							var enemyposy = $(this).y();
-							var name = "enemiesMissile_"+Math.ceil(Math.random()*1000);
+							missileCounter = (missileCounter + 1) % 100000;
+							var name = "enemiesMissile_"+missileCounter;
 							$("#enemiesMissileLayer").addSprite(name,{animation: missile["enemies"], posx: enemyposx, posy: enemyposy + 20, width: 30,height: 15});
 							$("#"+name).addClass("enemiesMissiles");
 						}
@@ -456,7 +458,8 @@ $(function(){
 					//shoot missile here
 					var playerposx = $("#player").x();
 					var playerposy = $("#player").y();
-					var name = "playerMissle_"+Math.ceil(Math.random()*1000);
+					missileCounter = (missileCounter + 1) % 100000;
+					var name = "playerMissle_"+missileCounter;
 					$("#playerMissileLayer").addSprite(name,{animation: missile["player"], posx: playerposx + 90, posy: playerposy + 14, width: 36,height: 10});
 					$("#"+name).addClass("playerMissiles")
 					break;
