@@ -1492,18 +1492,20 @@
          * Rotate the element(s) clock-wise.
          *
          * @param {Number} angle the angle in degrees
-         * 
+         * @param {Boolean} relative or not
+         *
          * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current rotation angle!
          */
-        rotate: function(angle){
-            var gameQuery = this[0].gameQuery;
+        rotate: function(degrees, rel){
+            var gameQuery = this[0].gameQuery,
+                currentAngle = gameQuery.angle;
 
-            if(angle !== undefined) {
-                $.gameQuery.update(gameQuery,{angle: angle});
-                return this.transform();
-            } else {
-                var ang = gameQuery.angle;
-                return ang;
+            if(degrees !== undefined && rel === true){                
+                return this.transform((currentAngle + degrees) % 360, this.scale());
+            } else if(degrees !== undefined) {
+                return this.transform(degrees % 360, this.scale());
+            } else {                
+                return currentAngle ? currentAngle : 0;
             }
         },
 
@@ -1511,18 +1513,20 @@
          * Change the scale of the selected element(s). The passed argument is a ratio:
          *
          * @param {Number} factor a ratio: 1.0 = original size, 0.5 = half the original size etc.
+         * @param {Boolean} relative or not
          * 
          * This is a non-destructive call when called with a parameter. Without parameter it IS a destructive call since the return value is the current scale factor!
          */
-        scale: function(factor){
-            var gameQuery = this[0].gameQuery;
+        scale: function(factor, rel){
+            var gameQuery = this[0].gameQuery,
+                currentFactor = gameQuery.factor;
 
-            if(factor !== undefined) {
-            	$.gameQuery.update(gameQuery,{factor: factor});
-                return this.transform();
-            } else {
-                var fac = gameQuery.factor;
-                return fac;
+            if(factor !== undefined && rel === true) {                
+                return this.transform(this.rotate(), currentFactor + factor);    
+            } else if(factor !== undefined) {
+                return this.transform(this.rotate(), factor);
+            } else {                
+                return currentFactor ? currentFactor : 1;
             }
         },
 
